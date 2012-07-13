@@ -79,6 +79,9 @@ DynamicTable.prototype._bindEventListeners = function(){
 			this.oTableElement.find('a.paging-btn-first').css('display', 'none');
 		}
 		else{
+			this.oTableElement.find('a.paging-btn-previous').css('display', 'inline');
+			this.oTableElement.find('a.paging-btn-first').css('display', 'inline');
+			
 			this.oTableElement.find('a.paging-btn-first').click(function(){
 				oDynamicTable.iCurrentPage = 0;
 				oDynamicTable.render();
@@ -95,6 +98,9 @@ DynamicTable.prototype._bindEventListeners = function(){
 			this.oTableElement.find('a.paging-btn-last').css('display', 'none');
 		}	
 		else{
+			this.oTableElement.find('a.paging-btn-next').css('display', 'inline');
+			this.oTableElement.find('a.paging-btn-last').css('display', 'inline');
+			
 			this.oTableElement.find('a.paging-btn-next').click(function(){
 				oDynamicTable.iCurrentPage++;
 				oDynamicTable.render();
@@ -275,22 +281,26 @@ DynamicTable.prototype._prepareTable = function(){
 						'<tr class="columnHeaders"></tr>' + 
 					'</thead>';
 	
-	var aPagingButtons = [];
+	var aPagingElements = [];
 	
 	if( this.bPaging ){
+		
+		aPagingElements.push( '	<label for="paging-current-page">Current Page</label>' + 
+								'<input name="paging-current-page" value="' + 
+									(this.iCurrentPage + 1) + '" readonly="readonly"></input>' );
 
 		aButtonNames = ['first', 'previous', 'next', 'last'];
 		
 		for( i = 0; i < aButtonNames.length; i++ ){
 			var sName = aButtonNames[i];
 			
-			aPagingButtons.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
+			aPagingElements.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
 		}
 	}
 	
 	var sFoot = '<tfoot>' + 
 					'<tr class="paging"><td>' + 
-					aPagingButtons.join('') + '</td></tr>' + 
+					aPagingElements.join('') + '</td></tr>' + 
 				'</tfoot>';	
 	
 	var sBody = '<tbody></tbody>';
