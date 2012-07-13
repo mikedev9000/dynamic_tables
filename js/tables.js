@@ -50,7 +50,9 @@
 	 //holds the number of records filtered after search
 	 this.iFilteredRecords = 0;
 	
-	 this._prepareTable();
+	 this._buildTableStructure();
+	 
+	 this._bindEventListeners();
 }
 
  /**
@@ -73,44 +75,26 @@ DynamicTable.prototype._bindEventListeners = function(){
 		this.oTableElement.find('a.paging-btn').click(function(event){
 			event.preventDefault();
 		});
-		
-		if( this.iCurrentPage == 0 ){
-			this.oTableElement.find('a.paging-btn-previous').css('display', 'none');
-			this.oTableElement.find('a.paging-btn-first').css('display', 'none');
-		}
-		else{
-			this.oTableElement.find('a.paging-btn-previous').css('display', 'inline');
-			this.oTableElement.find('a.paging-btn-first').css('display', 'inline');
 			
-			this.oTableElement.find('a.paging-btn-first').click(function(){
-				oDynamicTable.iCurrentPage = 0;
-				oDynamicTable.render();
-			});
-			
-			this.oTableElement.find('a.paging-btn-previous').click(function(){
-				oDynamicTable.iCurrentPage--;
-				oDynamicTable.render();
-			});
-		}
+		this.oTableElement.find('a.paging-btn-first').click(function(){
+			oDynamicTable.iCurrentPage = 0;
+			oDynamicTable.render();
+		});
 		
-		if( this.iCurrentPage == this.aaaPages.length - 1 ){
-			this.oTableElement.find('a.paging-btn-next').css('display', 'none');
-			this.oTableElement.find('a.paging-btn-last').css('display', 'none');
-		}	
-		else{
-			this.oTableElement.find('a.paging-btn-next').css('display', 'inline');
-			this.oTableElement.find('a.paging-btn-last').css('display', 'inline');
+		this.oTableElement.find('a.paging-btn-previous').click(function(){
+			oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage - 1;
+			oDynamicTable.render();
+		});
 			
-			this.oTableElement.find('a.paging-btn-next').click(function(){
-				oDynamicTable.iCurrentPage++;
-				oDynamicTable.render();
-			});
-		
-			this.oTableElement.find('a.paging-btn-last').click(function(){
-				oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
-				oDynamicTable.render();
-			});
-		}
+		this.oTableElement.find('a.paging-btn-next').click(function(){
+			oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage + 1;
+			oDynamicTable.render();
+		});
+	
+		this.oTableElement.find('a.paging-btn-last').click(function(){
+			oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
+			oDynamicTable.render();
+		});
 	}
 	
 	if( this.bSearchable ){
@@ -151,9 +135,10 @@ DynamicTable.prototype.render = function(){
 			oDynamicTable._transformData(data);
 			
 			oDynamicTable._fillTable();
-		}
+		} 
 	});
 }
+
 
 /**
  * Converts received json data into a format that will make filling the table easier.
@@ -234,8 +219,8 @@ DynamicTable.prototype._fillTable = function(){
 	this.oTableElement.find('thead').find('tr.columnHeaders').html( '<th>' + this.aColumns.join('</th><th>') + '</th>' );
 
 	this.oTableElement.find('tbody').html( aaRows.join('') );
-
-	this._bindEventListeners();
+	
+	this._updateTableStructure();
 }
 
 /**
@@ -244,7 +229,7 @@ DynamicTable.prototype._fillTable = function(){
  * creates thead, tbody, tfoot, and the input elements
  * based on what features are enabled
  */
-DynamicTable.prototype._prepareTable = function(){	
+DynamicTable.prototype._buildTableStructure = function(){	
 	var aInputs = [];
 	
 	if( this.bPaging ){
@@ -285,9 +270,8 @@ DynamicTable.prototype._prepareTable = function(){
 	
 	if( this.bPaging ){
 		
-		aPagingElements.push( '	<label for="paging-current-page">Current Page</label>' + 
-								'<input name="paging-current-page" value="' + 
-									(this.iCurrentPage + 1) + '" readonly="readonly"></input>' );
+		aPagingElements.push( 'Page <span class="paging-current-page"></span> ' +
+									'of <span class="paging-total-pages"></span>' );
 
 		aButtonNames = ['first', 'previous', 'next', 'last'];
 		
@@ -311,4 +295,36 @@ DynamicTable.prototype._prepareTable = function(){
 	//TODO determine if ui is good for this or not
 	//this.oTableElement.resizable();
 	
+}
+
+/**
+ * Makes any changes needed after rendering data into the table.
+ */
+DynamicTable.prototype._updateTableStructure = function(){
+	
+	if( this.bPaging ){
+		//if we are on the last page, don't render next or last links
+		if( this.iCurrentPage == this.aaaPages.length - 1 ){
+			this.oTableElement.find('a.paging-btn-next').css('display', 'none');
+			this.oTableElement.find('a.paging-btn-last').css('display', 'none');
+		}	
+		else{
+			this.oTableElement.find('a.paging-btn-next').css('display', 'inline');
+			this.oTableElement.find('a.paging-btn-last').css('display', 'inline');
+		}
+		
+		//if we are on the first page, don't render first or previous links
+		if( this.iCurrentPage == 0 ){
+			this.oTableElement.find('a.paging-btn-previous').css('display', 'none');
+			this.oTableElement.find('a.paging-btn-first').css('display', 'none');
+		}
+		else{
+			this.oTableElement.find('a.paging-btn-previous').css('display', 'inline');
+			this.oTableElement.find('a.paging-btn-first').css('display', 'inline');
+		}
+
+		this.oTableElement.find('tfoot tr.paging span.paging-current-page').html( (this.iCurrentPage + 1) );
+		this.oTableElement.find('tfoot tr.paging span.paging-total-pages').html( (this.aaaPages.length ) );
+	}
+
 }
