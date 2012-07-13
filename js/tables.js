@@ -30,7 +30,7 @@
 	 this.sSearchTerm = '';	
 	
 	 //the number of records to display on a page
-	 this.iPageRowCount = 10;
+	 this.iPageRowCount = 3;
 	
 	 //the page to render
 	 this.iCurrentPage = 0;
@@ -63,17 +63,56 @@ DynamicTable.prototype._bindEventListeners = function(){
 	this.oTableElement.find('.refresh').click( function(){
 		oDynamicTable.render();
 	});
-	
+
 	if( this.bPaging ){
-		this.oTableElement.find('select.paging').blur( function(){
-			alert( this.val() );
-			oDynamicTable.iPageRowCount = this.val();
+		this.oTableElement.find('select.paging').change( function(){
+			oDynamicTable.iPageRowCount = $(this).find('option:selected').val();
+			oDynamicTable.render();
 		});
+		
+		this.oTableElement.find('a.paging-btn').click(function(event){
+			event.preventDefault();
+		});
+		
+		if( this.iCurrentPage == 0 ){
+			this.oTableElement.find('a.paging-btn-previous').css('display', 'none');
+			this.oTableElement.find('a.paging-btn-first').css('display', 'none');
+		}
+		else{
+			this.oTableElement.find('a.paging-btn-first').click(function(){
+				oDynamicTable.iCurrentPage = 0;
+				oDynamicTable.render();
+			});
+			
+			this.oTableElement.find('a.paging-btn-previous').click(function(){
+				oDynamicTable.iCurrentPage--;
+				oDynamicTable.render();
+			});
+		}
+		
+		if( this.iCurrentPage == this.aaaPages.length - 1 ){
+			this.oTableElement.find('a.paging-btn-next').css('display', 'none');
+			this.oTableElement.find('a.paging-btn-last').css('display', 'none');
+		}	
+		else{
+			this.oTableElement.find('a.paging-btn-next').click(function(){
+				oDynamicTable.iCurrentPage++;
+				oDynamicTable.render();
+			});
+		
+			this.oTableElement.find('a.paging-btn-last').click(function(){
+				oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
+				oDynamicTable.render();
+			});
+		}
 	}
 	
 	if( this.bSearchable ){
-		this.oTableElement.find('input.search').blur( function(){
-			oDynamicTable.sSearchTerm = this.value;
+		this.oTableElement.find('form.search').submit( function(event){
+			event.preventDefault();
+			
+			oDynamicTable.sSearchTerm = this.term.value;
+			oDynamicTable.render();
 		});
 	}
 	
@@ -184,6 +223,8 @@ DynamicTable.prototype._fillTable = function(){
 
 	this.oTableElement.find('thead').find('tr.inputs th').attr( 'colspan', this.aColumns.length );
 	
+	this.oTableElement.find('tfoot').find('tr.paging td').attr( 'colspan', this.aColumns.length );
+	
 	this.oTableElement.find('thead').find('tr.columnHeaders').html( '<th>' + this.aColumns.join('</th><th>') + '</th>' );
 
 	this.oTableElement.find('tbody').html( aaRows.join('') );
@@ -192,8 +233,10 @@ DynamicTable.prototype._fillTable = function(){
 }
 
 /**
- * Renders the the intial(static) markup needed to load data into the table,
- * like thead and tbody and the input elements
+ * Renders the the intial(static) markup needed before we 
+ * can load data into the table
+ * creates thead, tbody, tfoot, and the input elements
+ * based on what features are enabled
  */
 DynamicTable.prototype._prepareTable = function(){	
 	var aInputs = [];
@@ -203,6 +246,8 @@ DynamicTable.prototype._prepareTable = function(){
 		aOptions = [ 3, 4, 10, 15, 20, 50, 100 ];
 		
 		aOptionStrings = [];
+	
+		aInputs.push( '<input type="submit" class="refresh" value="Refresh Data"></input>' );
 		
 		for( i = 0; i < aOptions.length; i++ ){			
 			var sSelected = aOptions[i] == this.iPageRowCount ? ' selected="selected"' : '';
@@ -211,18 +256,18 @@ DynamicTable.prototype._prepareTable = function(){
 									aOptions[i] + '</option>');
 		}
 				
-		aInputs.push( 	'<label for="paging">Paging</label>' + 
+		aInputs.push( 	'<label for="paging">Records Per Page</label>' + 
 						'<select class="paging"> ' + 
 						aOptionStrings.join('') + '</select>' );
 	}
 	
 	if( this.bSearchable ){
-		aInputs.push( 	'<label for="search">Search</label>' + 
-						'<input type="text" class="search" ' + 
-							'value="' + this.sSearchTerm + '"></input>' );
+		aInputs.push( 	'<form class="search">' +
+							'<input type="text" name="term" ' + 
+								'value="' + this.sSearchTerm + '"></input>' +
+								'<input type="submit" value="Search"></input>' +
+						'</form>');
 	}
-	
-	aInputs.push( '<input type="submit" class="refresh" value="Refresh"></input>' );
 	
 	var sHead = 	'<thead>' +
 						'<tr class="inputs"><th>' + 
@@ -230,13 +275,28 @@ DynamicTable.prototype._prepareTable = function(){
 						'<tr class="columnHeaders"></tr>' + 
 					'</thead>';
 	
+	var aPagingButtons = [];
 	
+	if( this.bPaging ){
+
+		aButtonNames = ['first', 'previous', 'next', 'last'];
+		
+		for( i = 0; i < aButtonNames.length; i++ ){
+			var sName = aButtonNames[i];
+			
+			aPagingButtons.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
+		}
+	}
+	
+	var sFoot = '<tfoot>' + 
+					'<tr class="paging"><td>' + 
+					aPagingButtons.join('') + '</td></tr>' + 
+				'</tfoot>';	
 	
 	var sBody = '<tbody></tbody>';
 	
-	var sFoot = '<tfoot><tr class="paging"></tr></tfoot>'
 	
-	this.oTableElement.html( sHead + sBody + sFoot );
+	this.oTableElement.html( sHead + sFoot + sBody );
 	
 	//TODO determine if ui is good for this or not
 	//this.oTableElement.resizable();
