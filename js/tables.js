@@ -14,14 +14,14 @@
  */
 function DynamicTable( oTableElement, sUrl, iWidth, iHeight, bPaging, bDraggable, bTableResizeable, bColumnsResizeable, bSearchable ){
 	
-	this.oTableElement = oTableElement;
+	this.oTableElement = $(oTableElement);
 	
 	this.sUrl = sUrl;
 	
 	this.iWidth = iWidth;
 	this.iHeight = iHeight;
 	
-	this.bPaging = bPaging;
+	this.bPaging = true;//bPaging;
 	this.bDraggable = bDraggable;
 	this.bTableResizeable = bTableResizeable;
 	this.bColumnsResizeable = bColumnsResizeable;
@@ -31,7 +31,7 @@ function DynamicTable( oTableElement, sUrl, iWidth, iHeight, bPaging, bDraggable
 	this.aColumns = [];
 	
 	//holds 2 dimensional array. pages with rows
-	this.aaPages = [];
+	this.aaaPages = [];
 	
 	//holds the total records retrieved from data source
 	this.iTotalRecords = 0;
@@ -42,34 +42,35 @@ function DynamicTable( oTableElement, sUrl, iWidth, iHeight, bPaging, bDraggable
 	//user input values
 	
 	//the search term entered in the search box, if enabled
-	this.sSearchTerm = null;	
+	this.sSearchTerm = '';	
 	
 	//the number of records to display on a page
-	this.iPageRowCount = null;
+	this.iPageRowCount = 10;
 	
 	//the page to render
 	this.iCurrentPage = 0;
 	
-	this.addEventListeners();
+	this._prepareTable();
 }
 
-DynamicTable.prototype.addEventListeners = function(){
+DynamicTable.prototype._bindEventListeners = function(){
 	
 	var oDynamicTable = this;
 	
-	this.oTableElement.find('input.refresh').click( function(){
+	this.oTableElement.find('.refresh').click( function(){
 		oDynamicTable.render();
 	});
 	
 	if( this.bPaging ){
-		this.oTableElement.find('input.paging').blur( function(){
+		this.oTableElement.find('select.paging').blur( function(){
+			alert( this.val() );
 			oDynamicTable.iPageRowCount = this.val();
 		});
 	}
 	
 	if( this.bSearchable ){
 		this.oTableElement.find('input.search').blur( function(){
-			oDynamicTable.sSearchTerm = this.val();
+			oDynamicTable.sSearchTerm = this.value;
 		});
 	}
 	
@@ -116,9 +117,9 @@ DynamicTable.prototype._transformData = function( data ){
 	this.aColumns = data.columns;
 	
 	//holds all of the data retrieved after filtering with search term
-	var aRows = [];	
+	var aaRows = [];	
 	
-	if( this.bSearchable && typeof( this.sSearchTerm ) != 'undefined' && this.sSearchTerm != '' && this.searchTerm != null ){
+	if( this.bSearchable && this.sSearchTerm ){
 		
 		var sLowerCaseTerm = this.sSearchTerm.toLowerCase();
 		
@@ -136,26 +137,26 @@ DynamicTable.prototype._transformData = function( data ){
 			}
 			
 			if( bRowMatch ){
-				aRows.push( data.rows[iRow] );
+				aaRows.push( data.rows[iRow] );
 			}
 		}
 		
 	}
 	else{
-		aRows = data.rows;		
+		aaRows = data.rows;		
 	}
 	
-	this.aaPages = [];
+	this.aaaPages = [];
 	
-	if( !this.bPaging ){
+	if( !this.bPaging || this.iPageRowCount == 0 ){
 		this.iPageRowCount = data.rows.length;
 	}
 	
 	//paginate the data
 	for ( i = 0; i < data.rows.length; i += this.iPageRowCount ) {
-		var aPageRows = aRows.slice( i, i + this.iPageRowCount );
+		var aaPageRows = aaRows.slice( i, i + this.iPageRowCount );
 		
-	    this.aaPages.push( aPageRows );
+	    this.aaaPages.push( aaPageRows );
 	}
 }
 
@@ -164,24 +165,72 @@ DynamicTable.prototype._transformData = function( data ){
  * by iterating over all rows and columns to build valid html
  */
 DynamicTable.prototype._fillTable = function(){	
-	console.log( this.aaPages );
 
-	var aPageRows = this.aaPages[this.iCurrentPage];
+	var aaPageRows = this.aaaPages[this.iCurrentPage];
 	
-	var aRows = [];
+	var aaRows = [];
 	
-	if( typeof( aPageRows ) == 'undefined' || aPageRows.length == 0 ){
-		aRows.push( '<tr><td colspan="' + this.aColumns.length + '">No data to display</td></tr>')
+	if( typeof( aaPageRows ) == 'undefined' || aaPageRows.length == 0 ){
+		aaRows.push( '<tr><td colspan="' + this.aColumns.length + '">No data to display</td></tr>')
 	}
 	else{
-		for (var i = 0; i < aPageRows.length; i++) {
-			aRows.push( '<tr><td>' + aPageRows[i].join('</td><td>') + '</td></tr>' );
+		for (var i = 0; i < aaPageRows.length; i++) {
+			aaRows.push( '<tr><td>' + aaPageRows[i].join('</td><td>') + '</td></tr>' );
 		}
 	}
-	
-	var sHeader = '<thead><tr><th>' + this.aColumns.join('</th><th>') + '</th></tr></thead>';
-	
-	var sBody = '<tbody>' + aRows.join('') + '</tbody>';
 
-	this.oTableElement.html( sHeader + sBody );
+	this.oTableElement.find('thead').find('tr.inputs th').attr( 'colspan', this.aColumns.length );
+	
+	this.oTableElement.find('thead').find('tr.columnHeaders').html( '<th>' + this.aColumns.join('</th><th>') + '</th>' );
+
+	this.oTableElement.find('tbody').html( aaRows.join('') );
+
+	this._bindEventListeners();
+}
+
+/**
+ * Renders the the intial(static) markup needed to load data into the table,
+ * like thead and tbody and the input elements
+ */
+DynamicTable.prototype._prepareTable = function(){	
+	var aInputs = [];
+	
+	if( this.bPaging ){
+		
+		aOptions = [ 3, 4, 10, 15, 20, 50, 100 ];
+		
+		aOptionStrings = [];
+		
+		for( i = 0; i < aOptions.length; i++ ){			
+			var sSelected = aOptions[i] == this.iPageRowCount ? ' selected="selected"' : '';
+			
+			aOptionStrings.push( '<option value="' + aOptions[i] +'"' + sSelected + '>' + 
+									aOptions[i] + '</option>');
+		}
+				
+		aInputs.push( 	'<label for="paging">Paging</label>' + 
+						'<select class="paging"> ' + 
+						aOptionStrings.join('') + '</select>' );
+	}
+	
+	if( this.bSearchable ){
+		aInputs.push( 	'<label for="search">Search</label>' + 
+						'<input type="text" class="search" ' + 
+							'value="' + this.sSearchTerm + '"></input>' );
+	}
+	
+	aInputs.push( '<input type="submit" class="refresh" value="Refresh"></input>' );
+	
+	var sHead = 	'<thead>' +
+						'<tr class="inputs"><th>' + 
+								aInputs.join('') + '</th></tr>' +
+						'<tr class="columnHeaders"></tr>' + 
+					'</thead>';
+	
+	
+	
+	var sBody = '<tbody></tbody>';
+	
+	this.oTableElement.html( sHead + sBody );
+	
 }
