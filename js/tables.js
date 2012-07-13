@@ -233,4 +233,7 @@ DynamicTable.prototype._prepareTable = function(){
 	
 	this.oTableElement.html( sHead + sBody );
 	
+	//TODO determine if ui is good for this or not
+	//this.oTableElement.resizable();
+	
 }
