@@ -3,17 +3,41 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NetBoss Pre-interview Test</title>
+<link rel="stylesheet" href="/css/jquery_ui_smoothness/jquery-ui-1.8.21.custom.css" type="text/css">
+<style type="text/css">
+table
+{
+	/*border-collapse:collapse;*/
+}
+table, td, th
+{
+	border:1px solid black;
+	padding: 3px;
+}
+</style>
 <script type="text/javascript" src="/js/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="/js/tables.js"></script>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-	var oTable = new DynamicTable( $('table#test'), '/test_data/products.json' );
+	var oTable = new DynamicTable( {
+				oTableElement: jQuery('table#test'), 
+				sUrl: '/test_data/products.json',
+				iWidth: null,
+				iHeight: null,
+				bPaging: true,
+				bDraggable: false,
+				bDraggable: false,
+				bTableResizeable: false,
+				bColumnsResizeable: false,
+				bSearchable: true
+			} );
 
 	oTable.render();
   });
 </script>
 </head>
-<body>
+<body class="jquery_ui_smoothness">
 <table id="test"></table>
 </body>
 </html>

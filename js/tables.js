@@ -12,47 +12,50 @@
  * @param bSearchable
  * @returns {DynamicTable}
  */
-function DynamicTable( oTableElement, sUrl, iWidth, iHeight, bPaging, bDraggable, bTableResizeable, bColumnsResizeable, bSearchable ){
+ function DynamicTable( oSettings ){
+	 
+	 //set up the default configuration
+	 this.oTableElement = null;
+	 this.sUrl = null;
+	 this.iWidth = null;
+	 this.iHeight = null;
+	 this.bPaging = false;
+	 this.bDraggable = false;
+	 this.bDraggable = false;
+	 this.bTableResizeable = false;
+	 this.bColumnsResizeable = false;
+	 this.bSearchable = false;
+		
+	 //the search term entered in the search box, if enabled
+	 this.sSearchTerm = '';	
 	
-	this.oTableElement = $(oTableElement);
+	 //the number of records to display on a page
+	 this.iPageRowCount = 10;
 	
-	this.sUrl = sUrl;
+	 //the page to render
+	 this.iCurrentPage = 0;
+	 
+	 //merge the settings into the DymanicTable object
+	 $.extend( this, oSettings );
 	
-	this.iWidth = iWidth;
-	this.iHeight = iHeight;
+	 //an array of column names
+	 this.aColumns = [];
 	
-	this.bPaging = true;//bPaging;
-	this.bDraggable = bDraggable;
-	this.bTableResizeable = bTableResizeable;
-	this.bColumnsResizeable = bColumnsResizeable;
-	this.bSearchable = true; //bSearchable;
+	 //holds 2 dimensional array. pages with rows
+	 this.aaaPages = [];
 	
-	//an array of column names
-	this.aColumns = [];
+	 //holds the total records retrieved from data source
+	 this.iTotalRecords = 0;
 	
-	//holds 2 dimensional array. pages with rows
-	this.aaaPages = [];
+	 //holds the number of records filtered after search
+	 this.iFilteredRecords = 0;
 	
-	//holds the total records retrieved from data source
-	this.iTotalRecords = 0;
-	
-	//holds the number of records filtered after search
-	this.iFilteredRecords = 0;
-	
-	//user input values
-	
-	//the search term entered in the search box, if enabled
-	this.sSearchTerm = '';	
-	
-	//the number of records to display on a page
-	this.iPageRowCount = 10;
-	
-	//the page to render
-	this.iCurrentPage = 0;
-	
-	this._prepareTable();
+	 this._prepareTable();
 }
 
+ /**
+  * Bind jQuery events for different features, based on the configuration
+  */
 DynamicTable.prototype._bindEventListeners = function(){
 	
 	var oDynamicTable = this;
@@ -231,7 +234,9 @@ DynamicTable.prototype._prepareTable = function(){
 	
 	var sBody = '<tbody></tbody>';
 	
-	this.oTableElement.html( sHead + sBody );
+	var sFoot = '<tfoot><tr class="paging"></tr></tfoot>'
+	
+	this.oTableElement.html( sHead + sBody + sFoot );
 	
 	//TODO determine if ui is good for this or not
 	//this.oTableElement.resizable();
