@@ -1,14 +1,43 @@
 /**
  * Create a new DynamicTable with the provided settings
+ * 
+ * Relies on having jQuery loaded
+ * 
  * @param oSettings
  */
  function DynamicTable( oSettings ){
 	 
 	 //set up the default configuration
+	 
+	 /**
+	  * jQuery object containing the <table/> to work with
+	  */
 	 this.oTableElement = null;
+	 
+	 /**
+	  * url from which to fetch data
+	  */
 	 this.sUrl = null;
+	 
+	 /**
+	  * configured width for the table, with a unit of measurement
+	  * must be valid for passing jQuery's .css() setter function
+	  * 
+	  * If null or 0, then the table will be rendered without the width set
+	  */
 	 this.iWidth = null;
+
+	 /**
+	  * configured height for the table, with a unit of measurement
+	  * must be valid for passing jQuery's .css() setter function
+	  * 
+	  * If null or 0, then the table will be rendered without the height set
+	  */
 	 this.iHeight = null;
+	 
+	 /**
+	  * boolean options to enable or disable certain features
+	  */
 	 this.bPaging = false;
 	 this.bDraggable = false;
 	 this.bDraggable = false;
@@ -26,7 +55,7 @@
 	 this.iCurrentPage = 0;
 	 
 	 //merge the settings into the DymanicTable object
-	 $.extend( this, oSettings );
+	 jQuery.extend( this, oSettings );
 	
 	 //an array of column names
 	 this.aColumns = [];
@@ -137,7 +166,8 @@ DynamicTable.prototype._initEventListeners = function(){
 
 	if( this.bPaging ){
 		this.oTableElement.find('select.paging').change( function(){
-			oDynamicTable.iPageRowCount = $(this).find('option:selected').val();
+			oDynamicTable.iPageRowCount = jQuery(this).find('option:selected').val();
+			oDynamicTable.iCurrentPage = 0;
 			oDynamicTable.render();
 		});
 		
@@ -176,7 +206,7 @@ DynamicTable.prototype._initEventListeners = function(){
 	}
 	
 	if( this.bDraggable ){
-		//TODO @see http://docs.jquery.com/UI/Draggable
+		//TODO @see http://docs.jQuery.com/UI/Draggable
 		// ask if using jquery ui is acceptable or not
 	}
 	
@@ -191,10 +221,10 @@ DynamicTable.prototype._initEventListeners = function(){
 
 		//add some helper functions to jQuery
 		jQuery.fn.getColumnPrevious = function() {
-			console.log($(this));
+			console.log(jQuery(this));
 		};
 		jQuery.fn.getColumnNext = function() {
-			console.log($(this));
+			console.log(jQuery(this));
 		};
 		
 		// add the column handle pointer
@@ -209,29 +239,29 @@ DynamicTable.prototype._initEventListeners = function(){
 			
 			var oElementLeft, oElementRight;
 			
-			var bThisIsLeft = ( event.pageX > $(this).offset().left() + 3 );
+			var bThisIsLeft = ( event.pageX > jQuery(this).offset().left() + 3 );
 			
-			var oElementLeft = bThisIsLeft ? $(this) : $(this).getColumnNext(); // get element to the right
+			var oElementLeft = bThisIsLeft ? jQuery(this) : jQuery(this).getColumnNext(); // get element to the right
 			
-			var oElementRight = bThisIsLeft ? $(this).getColumnPrevious() : $(this); // get element to the left
+			var oElementRight = bThisIsLeft ? jQuery(this).getColumnPrevious() : jQuery(this); // get element to the left
 			
 			oDynamicTable.oColumnHandleData = {
-					iColumnIndex: 	$(this).parent().children().index($(this)),
-					oElementLeft: 	bThisIsLeft ? $(this) : $(this).getColumnNext(),
-					oElementRight: 	bThisIsLeft ? $(this).getColumnPrevious() : $(this),
+					iColumnIndex: 	jQuery(this).parent().children().index(jQuery(this)),
+					oElementLeft: 	bThisIsLeft ? jQuery(this) : jQuery(this).getColumnNext(),
+					oElementRight: 	bThisIsLeft ? jQuery(this).getColumnPrevious() : jQuery(this),
 					iStartX: 		event.pageX
 			};
 			
 			console.log( oDynamicTable.oColumnHandleData );
 		});
 		
-		$(document).mousemove(function(e) {
+		jQuery(document).mousemove(function(e) {
 	        if(oDynamicTable.oColumnHandleData != null ) {
-	            $(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
+	            jQuery(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
 	        }
 	    });
 		
-		$(document).mouseup(function(event){
+		jQuery(document).mouseup(function(event){
 			if( oDynamicTable.oColumnHandleData != null ){
 				oDynamicTable.oColumnHandleData = null;
 			}
