@@ -40,15 +40,94 @@
 	 //holds the number of records filtered after search
 	 this.iFilteredRecords = 0;
 	
-	 this._buildTableStructure();
+	 this._initTable();
 	 
-	 this._bindEventListeners();
+	 this._initEventListeners();
 }
+
+ /**
+  * Called on new DynamicTable(oSettings) object in instantiated to render 
+  * the the intial(static) markup needed before we can load data into the table.
+  * 
+  * creates thead, tbody, tfoot, and the input elements
+  * based on what features are enabled
+  */
+ DynamicTable.prototype._initTable = function(){	
+ 	var aInputs = [];
+ 	
+ 	if( this.bPaging ){
+ 		
+ 		aOptions = [ 3, 4, 10, 15, 20, 50, 100 ];
+ 		
+ 		aOptionStrings = [];
+ 	
+ 		aInputs.push( '<input type="submit" class="refresh" value="Refresh Data"></input>' );
+ 		
+ 		for( i = 0; i < aOptions.length; i++ ){			
+ 			var sSelected = aOptions[i] == this.iPageRowCount ? ' selected="selected"' : '';
+ 			
+ 			aOptionStrings.push( '<option value="' + aOptions[i] +'"' + sSelected + '>' + 
+ 									aOptions[i] + '</option>');
+ 		}
+ 				
+ 		aInputs.push( 	'<label for="paging">Records Per Page</label>' + 
+ 						'<select class="paging"> ' + 
+ 						aOptionStrings.join('') + '</select>' );
+ 	}
+ 	
+ 	if( this.bSearchable ){
+ 		aInputs.push( 	'<form class="search">' +
+ 							'<input type="text" name="term" ' + 
+ 								'value="' + this.sSearchTerm + '"></input>' +
+ 								'<input type="submit" value="Search"></input>' +
+ 						'</form>');
+ 	}
+ 	
+ 	var sHead = 	'<thead>' +
+ 						'<tr class="inputs"><th>' + 
+ 								aInputs.join('') + '</th></tr>' +
+ 						'<tr class="columnHeaders"></tr>' + 
+ 					'</thead>';
+ 	
+ 	var aPagingElements = [];
+ 	
+ 	if( this.bPaging ){
+ 		
+ 		aPagingElements.push( 'Page <span class="paging-current-page"></span> ' +
+ 									'of <span class="paging-total-pages"></span>' );
+
+ 		aButtonNames = ['first', 'previous', 'next', 'last'];
+ 		
+ 		for( i = 0; i < aButtonNames.length; i++ ){
+ 			var sName = aButtonNames[i];
+ 			
+ 			aPagingElements.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
+ 		}
+ 	}
+ 	
+ 	var sFoot = '<tfoot>' + 
+ 					'<tr class="paging"><td>' + 
+ 					aPagingElements.join('') + '</td></tr>' + 
+ 				'</tfoot>';	
+ 	
+ 	var sBody = '<tbody></tbody>';
+ 	
+ 	
+ 	this.oTableElement.html( sHead + sFoot + sBody );
+ 	
+ 	if( this.iWidth ){
+ 		this.oTableElement.css( 'width', this.iWidth );
+ 	}
+ 	
+ 	if( this.iHeight ){
+ 		this.oTableElement.css( 'height', this.iHeight );
+ 	}
+ }
 
  /**
   * Bind jQuery events for different features, based on the configuration
   */
-DynamicTable.prototype._bindEventListeners = function(){
+DynamicTable.prototype._initEventListeners = function(){
 	
 	var oDynamicTable = this;
 	
@@ -162,7 +241,7 @@ DynamicTable.prototype._bindEventListeners = function(){
 
 /**
  * Performs an ajax request to retrieve the json data,
- * then transforms that data and renders is in the table
+ * then transforms that data and renders it in the table
  */
 DynamicTable.prototype.render = function(){	
 	var oDynamicTable = this;
@@ -264,84 +343,6 @@ DynamicTable.prototype._fillTable = function(){
 	
 	//make any changes to the base table structure that rely on the data being rendered
 	this._updateTableStructure();
-}
-
-/**
- * Renders the the intial(static) markup needed before we 
- * can load data into the table
- * creates thead, tbody, tfoot, and the input elements
- * based on what features are enabled
- */
-DynamicTable.prototype._buildTableStructure = function(){	
-	var aInputs = [];
-	
-	if( this.bPaging ){
-		
-		aOptions = [ 3, 4, 10, 15, 20, 50, 100 ];
-		
-		aOptionStrings = [];
-	
-		aInputs.push( '<input type="submit" class="refresh" value="Refresh Data"></input>' );
-		
-		for( i = 0; i < aOptions.length; i++ ){			
-			var sSelected = aOptions[i] == this.iPageRowCount ? ' selected="selected"' : '';
-			
-			aOptionStrings.push( '<option value="' + aOptions[i] +'"' + sSelected + '>' + 
-									aOptions[i] + '</option>');
-		}
-				
-		aInputs.push( 	'<label for="paging">Records Per Page</label>' + 
-						'<select class="paging"> ' + 
-						aOptionStrings.join('') + '</select>' );
-	}
-	
-	if( this.bSearchable ){
-		aInputs.push( 	'<form class="search">' +
-							'<input type="text" name="term" ' + 
-								'value="' + this.sSearchTerm + '"></input>' +
-								'<input type="submit" value="Search"></input>' +
-						'</form>');
-	}
-	
-	var sHead = 	'<thead>' +
-						'<tr class="inputs"><th>' + 
-								aInputs.join('') + '</th></tr>' +
-						'<tr class="columnHeaders"></tr>' + 
-					'</thead>';
-	
-	var aPagingElements = [];
-	
-	if( this.bPaging ){
-		
-		aPagingElements.push( 'Page <span class="paging-current-page"></span> ' +
-									'of <span class="paging-total-pages"></span>' );
-
-		aButtonNames = ['first', 'previous', 'next', 'last'];
-		
-		for( i = 0; i < aButtonNames.length; i++ ){
-			var sName = aButtonNames[i];
-			
-			aPagingElements.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
-		}
-	}
-	
-	var sFoot = '<tfoot>' + 
-					'<tr class="paging"><td>' + 
-					aPagingElements.join('') + '</td></tr>' + 
-				'</tfoot>';	
-	
-	var sBody = '<tbody></tbody>';
-	
-	
-	this.oTableElement.html( sHead + sFoot + sBody );
-	
-	if( this.iWidth ){
-		this.oTableElement.css( 'width', this.iWidth );
-	}
-	
-	if( this.iHeight ){
-		this.oTableElement.css( 'height', this.iHeight );
-	}
 }
 
 /**
