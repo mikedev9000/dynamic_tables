@@ -415,19 +415,6 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 	
 	oDynamicTable.bCursorSet = false;
 	
-	var iBoundaryWidth = 10;
-	
-	var fnMouseOnRightBoundary = function( event, element ){
-		
-		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).outerWidth();
-
-		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - iBoundaryWidth;
-		
-		var iCurrentMouseXCoordinate = event.pageX;
-		
-		return ( iCurrentMouseXCoordinate > iLeftEdgeXCoordinate && iCurrentMouseXCoordinate < iRightEdgeXCoordinate );
-	}
-	
 	// add the column handle pointers if on the left or right boundary of a th cell in the columnHeaders row
 	this.oTableElement.find('tr.columnHeaders th').mousemove( function( event ){
 		var sCursorStyle;
@@ -437,7 +424,7 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 			//	of moving, don't bother changing the cursor
 			return; 
 		}
-		if( fnMouseOnRightBoundary( event, this ) ){
+		if( MouseLocationDetector.onRightBoundary( event, this ) ){
 			sCursorStyle = 'e-resize';
 		}
 		else{
@@ -454,7 +441,8 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 	
 	// store some data about the column being resized
 	this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){			
-		if( fnMouseOnRightBoundary( event, this ) ){
+		if( MouseLocationDetector.onRightBoundary( event, this ) ){
+			event.preventDefault();
 			oDynamicTable.oColumnHandleData = {
 					oElement: 			this,
 					iLastXCoordinate:	event.pageX
@@ -473,3 +461,25 @@ jQuery.extend( jQuery, {
 		oDynamicTable.render();
 	}
 });
+
+/**
+ * The MouseLocationDetector object contains function for determining teh mouse's
+ * location relative to an element. It assists in resizing of columns and the table itself.
+ */
+var MouseLocationDetector = {
+	iBoundaryWidth: 10,
+	onRightBoundary: function( event, element ){
+		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).outerWidth();
+	
+		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - MouseLocationDetector.iBoundaryWidth;
+		
+		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
+	},
+	onLeftBoundary: function( event, element ){
+		var iLeftEdgeXCoordinate = jQuery(element).offset().left;
+		
+		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + MouseLocationDetector.iBoundaryWidth;
+		
+		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
+	}
+}
