@@ -1,15 +1,6 @@
 /**
- * Create a new DynamicTable
- * @param oTableElement
- * @param sUrl
- * @param iWidth
- * @param iHeight
- * @param bPaging
- * @param bDraggable
- * @param bTableResizeable
- * @param bColumnsResizable
- * @param bSearchable
- * @returns {DynamicTable}
+ * Create a new DynamicTable with the provided settings
+ * @param oSettings
  */
  function DynamicTable( oSettings ){
 	 
@@ -344,9 +335,13 @@ DynamicTable.prototype._buildTableStructure = function(){
 	
 	this.oTableElement.html( sHead + sFoot + sBody );
 	
-	//TODO determine if ui is good for this or not
-	//this.oTableElement.resizable();
+	if( this.iWidth ){
+		this.oTableElement.css( 'width', this.iWidth );
+	}
 	
+	if( this.iHeight ){
+		this.oTableElement.css( 'height', this.iHeight );
+	}
 }
 
 /**
