@@ -406,3 +406,14 @@ DynamicTable.prototype._updateTableStructure = function(){
 	}
 
 }
+
+/**
+ * Extend jquery with a function to create and render a new DynamicTable
+ */
+jQuery.extend( jQuery, {
+	createDynamicTable: function( oSettings ){
+		var oDynamicTable = new DynamicTable( oSettings );
+		
+		oDynamicTable.render();
+	}
+});

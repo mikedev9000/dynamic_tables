@@ -20,20 +20,18 @@ table, td, th
 <script type="text/javascript" src="/js/tables.js"></script>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-	var oTable = new DynamicTable( {
-				oTableElement: jQuery('table#test'), 
-				sUrl: '/test_data/products.json',
-				iWidth: '190 px',
-				iHeight: '3000 px',
-				bPaging: true,
-				bDraggable: false,
-				bDraggable: false,
-				bTableResizeable: false,
-				bColumnsResizeable: true,
-				bSearchable: true
-			} );
-
-	oTable.render();
+	$.createDynamicTable({
+		oTableElement: jQuery('table#test'), 
+		sUrl: '/test_data/products.json',
+		iWidth: null,
+		iHeight: null,
+		bPaging: true,
+		bDraggable: false,
+		bDraggable: false,
+		bTableResizeable: false,
+		bColumnsResizeable: true,
+		bSearchable: true
+	});
   });
 </script>
 </head>
