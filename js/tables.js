@@ -165,35 +165,7 @@ DynamicTable.prototype._initEventListeners = function(){
 	});
 
 	if( this.bPaging ){
-		this.oTableElement.find('select.paging').change( function(){
-			oDynamicTable.iPageRowCount = jQuery(this).find('option:selected').val();
-			oDynamicTable.iCurrentPage = 0;
-			oDynamicTable.render();
-		});
-		
-		this.oTableElement.find('a.paging-btn').click(function(event){
-			event.preventDefault();
-		});
-			
-		this.oTableElement.find('a.paging-btn-first').click(function(){
-			oDynamicTable.iCurrentPage = 0;
-			oDynamicTable.render();
-		});
-		
-		this.oTableElement.find('a.paging-btn-previous').click(function(){
-			oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage - 1;
-			oDynamicTable.render();
-		});
-			
-		this.oTableElement.find('a.paging-btn-next').click(function(){
-			oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage + 1;
-			oDynamicTable.render();
-		});
-	
-		this.oTableElement.find('a.paging-btn-last').click(function(){
-			oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
-			oDynamicTable.render();
-		});
+		this._initEventListenersPaging();
 	}
 	
 	if( this.bSearchable ){
@@ -215,58 +187,71 @@ DynamicTable.prototype._initEventListeners = function(){
 	}
 	
 	if( this.bColumnsResizeable ){
-		//TODO @see http://robau.wordpress.com/2011/06/09/unobtrusive-table-column-resize-with-jquery/
-		
-		this.oColumnHandleData = null;
-
-		//add some helper functions to jQuery
-		jQuery.fn.getColumnPrevious = function() {
-			console.log(jQuery(this));
-		};
-		jQuery.fn.getColumnNext = function() {
-			console.log(jQuery(this));
-		};
-		
-		// add the column handle pointer
-		this.oTableElement.find('th, td').mouseover( function( event ){
-			//TODO if the mouse is close to the column border, change the poiner image
-		});
-		
-		//FIXME: unable to locate the th elements
-		console.log( this.oTableElement.find('tr.columnHeaders th') );
-		// store some data about the column being resized
-		this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){
-			
-			var oElementLeft, oElementRight;
-			
-			var bThisIsLeft = ( event.pageX > jQuery(this).offset().left() + 3 );
-			
-			var oElementLeft = bThisIsLeft ? jQuery(this) : jQuery(this).getColumnNext(); // get element to the right
-			
-			var oElementRight = bThisIsLeft ? jQuery(this).getColumnPrevious() : jQuery(this); // get element to the left
-			
-			oDynamicTable.oColumnHandleData = {
-					iColumnIndex: 	jQuery(this).parent().children().index(jQuery(this)),
-					oElementLeft: 	bThisIsLeft ? jQuery(this) : jQuery(this).getColumnNext(),
-					oElementRight: 	bThisIsLeft ? jQuery(this).getColumnPrevious() : jQuery(this),
-					iStartX: 		event.pageX
-			};
-			
-			console.log( oDynamicTable.oColumnHandleData );
-		});
-		
-		jQuery(document).mousemove(function(e) {
-	        if(oDynamicTable.oColumnHandleData != null ) {
-	            jQuery(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
-	        }
-	    });
-		
-		jQuery(document).mouseup(function(event){
-			if( oDynamicTable.oColumnHandleData != null ){
-				oDynamicTable.oColumnHandleData = null;
-			}
-		});
+		this._initEventListenersColumnsResizeable();
 	}
+}
+
+/**
+ * Binds event listeners for the paging feature
+ */
+DynamicTable.prototype._initEventListenersPaging = function(){
+
+	var oDynamicTable = this;
+	
+	this.oTableElement.find('select.paging').change( function(){
+		oDynamicTable.iPageRowCount = jQuery(this).find('option:selected').val();
+		oDynamicTable.iCurrentPage = 0;
+		oDynamicTable.render();
+	});
+	
+	this.oTableElement.find('a.paging-btn').click(function(event){
+		event.preventDefault();
+	});
+		
+	this.oTableElement.find('a.paging-btn-first').click(function(){
+		oDynamicTable.iCurrentPage = 0;
+		oDynamicTable.render();
+	});
+	
+	this.oTableElement.find('a.paging-btn-previous').click(function(){
+		oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage - 1;
+		oDynamicTable.render();
+	});
+		
+	this.oTableElement.find('a.paging-btn-next').click(function(){
+		oDynamicTable.iCurrentPage = oDynamicTable.iCurrentPage + 1;
+		oDynamicTable.render();
+	});
+
+	this.oTableElement.find('a.paging-btn-last').click(function(){
+		oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
+		oDynamicTable.render();
+	});	
+}
+
+/**
+ * Bind event listeners for the columns resizeable feature
+ */
+DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
+	
+	var oDynamicTable = this;
+	
+	/**
+	 * Holds information about the columns to be resized and the original x-coordinate when the mouse was clicked
+	 */
+	this.oColumnHandleData = null;
+	
+	jQuery(document).mousemove(function(e) {
+        if(oDynamicTable.oColumnHandleData != null ) {
+            jQuery(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
+        }
+    });
+	
+	jQuery(document).mouseup(function(event){
+		if( oDynamicTable.oColumnHandleData != null ){
+			oDynamicTable.oColumnHandleData = null;
+		}
+	});
 }
 
 /**
@@ -373,6 +358,9 @@ DynamicTable.prototype._fillTable = function(){
 	
 	//make any changes to the base table structure that rely on the data being rendered
 	this._updateTableStructure();
+	
+	//bind any event handlers that rely on data existing in the table
+	this._bindDataDrivenEventHandlers();
 }
 
 /**
@@ -404,7 +392,107 @@ DynamicTable.prototype._updateTableStructure = function(){
 		this.oTableElement.find('tfoot tr.paging span.paging-current-page').html( (this.iCurrentPage + 1) );
 		this.oTableElement.find('tfoot tr.paging span.paging-total-pages').html( (this.aaaPages.length ) );
 	}
+}
 
+/**
+ * Any event handlers that rely on data being populated in the table should be added here.
+ * This function is called after filling the table and column headers with data.
+ */
+DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
+	if( this.bColumnsResizeable ){
+		this._bindColumnsResizeableEventHandlers();
+	}
+}
+
+DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
+	var oDynamicTable = this;
+	
+	oDynamicTable.bCursorSet = false;
+	
+	var iBoundaryWidth = 10;
+	
+	var fnMouseOnLeftBoundary = function( event, element ){
+		var iLeftEdgeXCoordinate = jQuery(element).offset().left;
+		
+		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + iBoundaryWidth;
+		
+		var iCurrentMouseXCoordinate = event.pageX;
+		
+		return ( iCurrentMouseXCoordinate > iLeftEdgeXCoordinate && iCurrentMouseXCoordinate < iRightEdgeXCoordinate );
+	}
+	
+	var fnMouseOnRightBoundary = function( event, element ){
+		
+		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).width();
+
+		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - iBoundaryWidth;
+		
+		var iCurrentMouseXCoordinate = event.pageX;
+		
+		return ( iCurrentMouseXCoordinate > iLeftEdgeXCoordinate && iCurrentMouseXCoordinate < iRightEdgeXCoordinate );
+	}
+	
+	// add the column handle pointers if on the left or right boundary of a th cell in the columnHeaders row
+	this.oTableElement.find('tr.columnHeaders th').mousemove( function( event ){
+		var sCursorStyle;
+		
+		if( oDynamicTable.oColumnHandleData ){
+			//if the columnHandle is in the process of moving, don't bother changing the cursor
+			return; 
+		}
+		else if( fnMouseOnLeftBoundary( event, this ) ){
+			sCursorStyle = 'w-resize';
+		}
+		else if( fnMouseOnRightBoundary( event, this ) ){
+			sCursorStyle = 'e-resize';
+		}
+		else{
+			sCursorStyle = 'default';
+		}
+		
+		jQuery('body').css('cursor', sCursorStyle );
+	});
+	
+	// add the column handle pointer
+	this.oTableElement.find('tr.columnHeaders th').mouseout( function( event ){
+		jQuery('body').css('cursor', 'default');
+	});
+	
+	var fnGetColumnIndex = function( cell ){
+		
+	}
+	
+	var fnGetCellToLeft = function( cell ){
+		
+	}
+	
+	var fnGetCellToRight = function( cell ){
+		
+	}
+	
+	// store some data about the column being resized
+	this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){	
+
+		var bThisIsLeft;
+		
+		if( fnMouseOnLeftBoundary( event, this ) ){
+			bThisIsLeft = false;
+		}
+		else if( fnMouseOnRightBoundary( event, this ) ){
+			bThisIsLeft = true;
+		}
+		else{
+			//if we are not clicking inside of a boundary, then do nothing
+			return;
+		}
+		
+		oDynamicTable.oColumnHandleData = {
+				iColumnIndex: 		fnGetColumnIndex( this ),
+				oElementLeft: 		bThisIsLeft ? jQuery(this) : jQuery(fnGetCellToRight( this )),
+				oElementRight: 		!bThisIsLeft ? jQuery(this) : jQuery(fnGetCellToLeft( this )),
+				iLastXCoordinate:	event.pageX
+		};
+	});
 }
 
 /**
@@ -417,3 +505,11 @@ jQuery.extend( jQuery, {
 		oDynamicTable.render();
 	}
 });
+
+//add some helper functions to jQuery to get the next and previous columns (to the right or left of an element)
+jQuery.fn.getColumnPrevious = function() {
+	console.log(jQuery(this));
+};
+jQuery.fn.getColumnNext = function() {
+	console.log(jQuery(this));
+};
