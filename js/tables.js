@@ -183,7 +183,7 @@ DynamicTable.prototype._initEventListeners = function(){
 	}
 	
 	if( this.bTableResizable ){
-		//TODO @see http://robau.wordpress.com/2011/06/09/unobtrusive-table-column-resize-with-jquery/
+		this._initEventListenersTableResizeable();
 	}
 	
 	if( this.bColumnsResizeable ){
@@ -240,6 +240,93 @@ DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
 	 * Holds information about the columns to be resized and the original x-coordinate when the mouse was clicked
 	 */
 	this.oColumnHandleData = null;
+	
+	jQuery(document).mousemove(function(event) {
+        if(oDynamicTable.oColumnHandleData != null ) {
+        	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iLastXCoordinate;
+
+        	var oElement = oDynamicTable.oColumnHandleData.oElement;
+
+    		jQuery(oElement).width( jQuery(oElement).width() + iXChange );
+        	
+        	oDynamicTable.oColumnHandleData.iLastXCoordinate = event.pageX;
+        }
+    });
+	
+	jQuery(document).mouseup(function(event){
+		if( oDynamicTable.oColumnHandleData != null ){
+			oDynamicTable.oColumnHandleData = null;
+		}
+	});
+}
+
+/**
+ * Bind event listeners for the table resizeable feature
+ */
+DynamicTable.prototype._initEventListenersTableResizeable = function(){
+	
+	var oDynamicTable = this;
+	
+	/**
+	 * Holds information about the columns to be resized and the original x-coordinate when the mouse was clicked
+	 */
+	this.oTableHandleData = null;
+	
+	// add table handle pointers based on location
+	this.oTableElement.mousemove( function( event ){
+		var sCursorStyle = 'default';
+		
+		if( oDynamicTable.oTableHandleData ){
+			//if the tableHandle is in the process 
+			//	of moving, don't bother changing the cursor
+			return; 
+		}
+		
+		var oBoundaries = {
+				bTop: MouseLocationDetector.onTopBoundary( event, this ),
+				bRight: MouseLocationDetector.onRightBoundary( event, this ),
+				bBottom: MouseLocationDetector.onBottomBoundary( event, this ),
+				bLeftt: MouseLocationDetector.onLeftBoundary( event, this )
+		}
+		
+		var sLocation = '';
+
+		if ( oBoundaries.bBottom ){
+			sLocation = 's' + sLocation;
+		}
+		else if ( oBoundaries.bTop ){
+			sLocation = 'n' + sLocation;
+		}
+		
+		if( oBoundaries.bRight ){
+			sLocation = 'e' + sLocation;
+		}
+		else if ( oBoundaries.bLeft ){
+			sLocation = 'w' + sLocation;
+		}
+		
+		if( sLocation != '' ){
+			sCursorStyle = sLocation + '-resize';
+		}
+		
+		jQuery('body').css('cursor', sCursorStyle );
+	});
+	
+	// remove the column handle pointer
+	this.oTableElement.mouseout( function( event ){
+		jQuery('body').css('cursor', 'default');
+	});
+	
+	// store some data about the column being resized
+	this.oTableElement.mousedown( function( event ){			
+		if( MouseLocationDetector.onRightBoundary( event, this ) ){
+			event.preventDefault();
+			oDynamicTable.oColumnHandleData = {
+					oElement: 			this,
+					iLastXCoordinate:	event.pageX
+			};
+		}
+	});
 	
 	jQuery(document).mousemove(function(event) {
         if(oDynamicTable.oColumnHandleData != null ) {
@@ -413,8 +500,6 @@ DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
 DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 	var oDynamicTable = this;
 	
-	oDynamicTable.bCursorSet = false;
-	
 	// add the column handle pointers if on the left or right boundary of a th cell in the columnHeaders row
 	this.oTableElement.find('tr.columnHeaders th').mousemove( function( event ){
 		var sCursorStyle;
@@ -481,5 +566,11 @@ var MouseLocationDetector = {
 		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + MouseLocationDetector.iBoundaryWidth;
 		
 		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
+	},
+	onTopBoundary: function( event, element ){
+		return false;
+	},
+	onBottomBoundary: function( event, element ){
+		return false;
 	}
 }
