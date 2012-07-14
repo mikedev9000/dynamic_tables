@@ -241,9 +241,19 @@ DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
 	 */
 	this.oColumnHandleData = null;
 	
-	jQuery(document).mousemove(function(e) {
+	jQuery(document).mousemove(function(event) {
         if(oDynamicTable.oColumnHandleData != null ) {
-            jQuery(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
+        	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iLastXCoordinate;
+
+        	var oElementLeft = oDynamicTable.oColumnHandleData.oElementLeft;
+        	
+        	var oElementRight = oDynamicTable.oColumnHandleData.oElementRight;
+        	console.log( iXChange );
+
+    		jQuery(oElementLeft).width( jQuery(oElementLeft).width() + iXChange );
+    		jQuery(oElementRight).width( jQuery(oElementRight).width() - iXChange );
+        	
+        	oDynamicTable.oColumnHandleData.iLastXCoordinate = event.pageX;
         }
     });
 	
@@ -458,16 +468,20 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 		jQuery('body').css('cursor', 'default');
 	});
 	
-	var fnGetColumnIndex = function( cell ){
-		
+	var fnGetColumnIndex = function( oCell ){		
+		return jQuery(oCell).parent().children().index( jQuery(oCell) );
 	}
 	
-	var fnGetCellToLeft = function( cell ){
+	var fnGetCellToLeft = function( oCell ){
+		var iCellIndex = fnGetColumnIndex( oCell );
 		
+		return jQuery(oCell).parent().children()[iCellIndex - 1];
 	}
 	
-	var fnGetCellToRight = function( cell ){
+	var fnGetCellToRight = function( oCell ){
+		var iCellIndex = fnGetColumnIndex( oCell );
 		
+		return jQuery(oCell).parent().children()[iCellIndex + 1];
 	}
 	
 	// store some data about the column being resized
@@ -488,10 +502,12 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 		
 		oDynamicTable.oColumnHandleData = {
 				iColumnIndex: 		fnGetColumnIndex( this ),
-				oElementLeft: 		bThisIsLeft ? jQuery(this) : jQuery(fnGetCellToRight( this )),
-				oElementRight: 		!bThisIsLeft ? jQuery(this) : jQuery(fnGetCellToLeft( this )),
+				oElementLeft: 		bThisIsLeft ? this : fnGetCellToRight( this ),
+				oElementRight: 		!bThisIsLeft ? this : fnGetCellToLeft( this ),
 				iLastXCoordinate:	event.pageX
 		};
+		
+		console.log( oDynamicTable.oColumnHandleData );
 	});
 }
 
@@ -505,11 +521,3 @@ jQuery.extend( jQuery, {
 		oDynamicTable.render();
 	}
 });
-
-//add some helper functions to jQuery to get the next and previous columns (to the right or left of an element)
-jQuery.fn.getColumnPrevious = function() {
-	console.log(jQuery(this));
-};
-jQuery.fn.getColumnNext = function() {
-	console.log(jQuery(this));
-};
