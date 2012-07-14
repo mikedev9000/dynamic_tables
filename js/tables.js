@@ -1,4 +1,3 @@
-
 /**
  * Create a new DynamicTable
  * @param oTableElement
@@ -117,6 +116,56 @@ DynamicTable.prototype._bindEventListeners = function(){
 	
 	if( this.bColumnsResizeable ){
 		//TODO @see http://robau.wordpress.com/2011/06/09/unobtrusive-table-column-resize-with-jquery/
+		
+		this.oColumnHandleData = null;
+
+		//add some helper functions to jQuery
+		jQuery.fn.getColumnPrevious = function() {
+			console.log($(this));
+		};
+		jQuery.fn.getColumnNext = function() {
+			console.log($(this));
+		};
+		
+		// add the column handle pointer
+		this.oTableElement.find('th, td').mouseover( function( event ){
+			//TODO if the mouse is close to the column border, change the poiner image
+		});
+		
+		//FIXME: unable to locate the th elements
+		console.log( this.oTableElement.find('tr.columnHeaders th') );
+		// store some data about the column being resized
+		this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){
+			
+			var oElementLeft, oElementRight;
+			
+			var bThisIsLeft = ( event.pageX > $(this).offset().left() + 3 );
+			
+			var oElementLeft = bThisIsLeft ? $(this) : $(this).getColumnNext(); // get element to the right
+			
+			var oElementRight = bThisIsLeft ? $(this).getColumnPrevious() : $(this); // get element to the left
+			
+			oDynamicTable.oColumnHandleData = {
+					iColumnIndex: 	$(this).parent().children().index($(this)),
+					oElementLeft: 	bThisIsLeft ? $(this) : $(this).getColumnNext(),
+					oElementRight: 	bThisIsLeft ? $(this).getColumnPrevious() : $(this),
+					iStartX: 		event.pageX
+			};
+			
+			console.log( oDynamicTable.oColumnHandleData );
+		});
+		
+		$(document).mousemove(function(e) {
+	        if(oDynamicTable.oColumnHandleData != null ) {
+	            $(oDynamicTable.columnHandlePressed).width(startWidth+(e.pageX-startX));
+	        }
+	    });
+		
+		$(document).mouseup(function(event){
+			if( oDynamicTable.oColumnHandleData != null ){
+				oDynamicTable.oColumnHandleData = null;
+			}
+		});
 	}
 }
 
@@ -212,14 +261,17 @@ DynamicTable.prototype._fillTable = function(){
 		}
 	}
 
-	this.oTableElement.find('thead').find('tr.inputs th').attr( 'colspan', this.aColumns.length );
-	
+	//set up colspan for the inputs and paging elements in theadn and tfoot
+	this.oTableElement.find('thead').find('tr.inputs th').attr( 'colspan', this.aColumns.length );	
 	this.oTableElement.find('tfoot').find('tr.paging td').attr( 'colspan', this.aColumns.length );
 	
+	//set up the column headers
 	this.oTableElement.find('thead').find('tr.columnHeaders').html( '<th>' + this.aColumns.join('</th><th>') + '</th>' );
 
+	//fill tbody with all the generated rows
 	this.oTableElement.find('tbody').html( aaRows.join('') );
 	
+	//make any changes to the base table structure that rely on the data being rendered
 	this._updateTableStructure();
 }
 
