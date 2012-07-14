@@ -245,13 +245,9 @@ DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
         if(oDynamicTable.oColumnHandleData != null ) {
         	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iLastXCoordinate;
 
-        	var oElementLeft = oDynamicTable.oColumnHandleData.oElementLeft;
-        	
-        	var oElementRight = oDynamicTable.oColumnHandleData.oElementRight;
-        	console.log( iXChange );
+        	var oElement = oDynamicTable.oColumnHandleData.oElement;
 
-    		jQuery(oElementLeft).width( jQuery(oElementLeft).width() + iXChange );
-    		jQuery(oElementRight).width( jQuery(oElementRight).width() - iXChange );
+    		jQuery(oElement).width( jQuery(oElement).width() + iXChange );
         	
         	oDynamicTable.oColumnHandleData.iLastXCoordinate = event.pageX;
         }
@@ -421,19 +417,9 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 	
 	var iBoundaryWidth = 10;
 	
-	var fnMouseOnLeftBoundary = function( event, element ){
-		var iLeftEdgeXCoordinate = jQuery(element).offset().left;
-		
-		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + iBoundaryWidth;
-		
-		var iCurrentMouseXCoordinate = event.pageX;
-		
-		return ( iCurrentMouseXCoordinate > iLeftEdgeXCoordinate && iCurrentMouseXCoordinate < iRightEdgeXCoordinate );
-	}
-	
 	var fnMouseOnRightBoundary = function( event, element ){
 		
-		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).width();
+		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).outerWidth();
 
 		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - iBoundaryWidth;
 		
@@ -447,13 +433,11 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 		var sCursorStyle;
 		
 		if( oDynamicTable.oColumnHandleData ){
-			//if the columnHandle is in the process of moving, don't bother changing the cursor
+			//if the columnHandle is in the process 
+			//	of moving, don't bother changing the cursor
 			return; 
 		}
-		else if( fnMouseOnLeftBoundary( event, this ) ){
-			sCursorStyle = 'w-resize';
-		}
-		else if( fnMouseOnRightBoundary( event, this ) ){
+		if( fnMouseOnRightBoundary( event, this ) ){
 			sCursorStyle = 'e-resize';
 		}
 		else{
@@ -463,51 +447,19 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 		jQuery('body').css('cursor', sCursorStyle );
 	});
 	
-	// add the column handle pointer
+	// remove the column handle pointer
 	this.oTableElement.find('tr.columnHeaders th').mouseout( function( event ){
 		jQuery('body').css('cursor', 'default');
 	});
 	
-	var fnGetColumnIndex = function( oCell ){		
-		return jQuery(oCell).parent().children().index( jQuery(oCell) );
-	}
-	
-	var fnGetCellToLeft = function( oCell ){
-		var iCellIndex = fnGetColumnIndex( oCell );
-		
-		return jQuery(oCell).parent().children()[iCellIndex - 1];
-	}
-	
-	var fnGetCellToRight = function( oCell ){
-		var iCellIndex = fnGetColumnIndex( oCell );
-		
-		return jQuery(oCell).parent().children()[iCellIndex + 1];
-	}
-	
 	// store some data about the column being resized
-	this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){	
-
-		var bThisIsLeft;
-		
-		if( fnMouseOnLeftBoundary( event, this ) ){
-			bThisIsLeft = false;
+	this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){			
+		if( fnMouseOnRightBoundary( event, this ) ){
+			oDynamicTable.oColumnHandleData = {
+					oElement: 			this,
+					iLastXCoordinate:	event.pageX
+			};
 		}
-		else if( fnMouseOnRightBoundary( event, this ) ){
-			bThisIsLeft = true;
-		}
-		else{
-			//if we are not clicking inside of a boundary, then do nothing
-			return;
-		}
-		
-		oDynamicTable.oColumnHandleData = {
-				iColumnIndex: 		fnGetColumnIndex( this ),
-				oElementLeft: 		bThisIsLeft ? this : fnGetCellToRight( this ),
-				oElementRight: 		!bThisIsLeft ? this : fnGetCellToLeft( this ),
-				iLastXCoordinate:	event.pageX
-		};
-		
-		console.log( oDynamicTable.oColumnHandleData );
 	});
 }
 
