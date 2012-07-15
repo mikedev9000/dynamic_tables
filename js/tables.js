@@ -287,7 +287,8 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 		//returns one of ( n, ne, e, se, s, sw, w, nw )
 		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
 		
-		if( sBoundaryLocation != null ){
+		//only allowing resizing from east and/or south borders to start with
+		if( sBoundaryLocation != null && ( sBoundaryLocation.indexOf('e') != -1 || sBoundaryLocation.indexOf('s') != -1 ) ){
 			sCursorStyle = sBoundaryLocation + '-resize';
 		}
 		
@@ -555,27 +556,60 @@ jQuery.extend( jQuery, {
  * location relative to an element. It assists in resizing of columns and the table itself.
  */
 var MouseLocationDetector = {
-	iBoundaryWidth: 10,
+		
+	/**
+	 * holds the size a boundary in pixels
+	 */
+	iBoundarySize: 10,
+	
+	/**
+	 * Returns true if the mouse is inside of the right boundary, false otherwise
+	 */
 	onRightBoundary: function( event, element ){
 		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).outerWidth();
 	
-		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - MouseLocationDetector.iBoundaryWidth;
+		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - MouseLocationDetector.iBoundarySize;
 		
 		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
 	},
+	
+	/**
+	 * Returns true if the mouse is inside of the left boundary, false otherwise
+	 */
 	onLeftBoundary: function( event, element ){
 		var iLeftEdgeXCoordinate = jQuery(element).offset().left;
 		
-		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + MouseLocationDetector.iBoundaryWidth;
+		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + MouseLocationDetector.iBoundarySize;
 		
 		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
 	},
+	
+	/**
+	 * Returns true if the mouse is inside of the top boundary, false otherwise
+	 */
 	onTopBoundary: function( event, element ){
+		//TODO flesh this out once there is a need for it
 		return false;
 	},
+	
+	/**
+	 * Returns true if the mouse is inside of the bottom boundary, false otherwise
+	 */
 	onBottomBoundary: function( event, element ){
-		return false;
+		var iBottomEdgeYCoordinate = jQuery(element).offset().top + jQuery(element).outerHeight();
+	
+		var iTopEdgeYCoordinate = iBottomEdgeYCoordinate - MouseLocationDetector.iBoundarySize;
+		console.log( [ iTopEdgeYCoordinate, iBottomEdgeYCoordinate, event.pageY, ( event.pageY > iBottomEdgeYCoordinate ), ( event.pageY < iTopEdgeYCoordinate ) ] );
+		return ( event.pageY > iBottomEdgeYCoordinate && event.pageY < iTopEdgeYCoordinate );
 	},
+	
+	/**
+	 * Returns a string containing one of the following:
+	 * 	[n, ne, e, se, s, sw, nw]
+	 * based on the location of the mouse within the element.
+	 * 
+	 * If the mouse is not over any border, null is returned.
+	 */
 	getCoveredBoundaries: function( event, element ){
 		var sLocation = '';
 		
