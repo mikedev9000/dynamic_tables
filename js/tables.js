@@ -40,7 +40,6 @@
 	  */
 	 this.bPaging = false;
 	 this.bDraggable = false;
-	 this.bDraggable = false;
 	 this.bTableResizeable = false;
 	 this.bColumnsResizeable = false;
 	 this.bSearchable = false;
@@ -74,7 +73,8 @@
 	 this._initEventListeners();
 	 
 	 /**
-	 * Holds information about the columns to be resized and the original x-coordinate when the mouse was clicked
+	 * Holds information about the columns to be resized and 
+	 * the original x-coordinate when the mouse was clicked
 	 */
 	this.oColumnHandleData = null;
 	
@@ -83,7 +83,13 @@
 	 * including the last mouse location and which
 	 * handle is active ( bottom, right, etc )
 	 */
-	this.oTableHandleData = null
+	this.oTableResizeHandleData = null;
+	
+	/**
+	 * Holds information about the last mouse
+	 * location when dragging the table
+	 */
+	this.oTableDragHandleData = null;
 }
 
  /**
@@ -190,8 +196,7 @@ DynamicTable.prototype._initEventListeners = function(){
 	}
 	
 	if( this.bDraggable ){
-		//TODO @see http://docs.jQuery.com/UI/Draggable
-		// ask if using jquery ui is acceptable or not
+		this._initEventListenersDraggable();
 	}
 	
 	if( this.bTableResizeable ){
@@ -278,7 +283,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 	this.oTableElement.mousemove( function( event ){
 		var sCursorStyle = 'default';
 
-		if( oDynamicTable.oTableHandleData ){
+		if( oDynamicTable.oTableResizeHandleData ){
 			//if the tableHandle is in the process 
 			//	of moving, don't bother changing the cursor
 			return; 
@@ -297,7 +302,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 	
 	// remove the column handle pointer
 	this.oTableElement.mouseout( function( event ){
-		if( oDynamicTable.oTableHandleData == null ){
+		if( oDynamicTable.oTableResizeHandleData == null ){
 			jQuery('body').css('cursor', 'default');
 		}
 	});
@@ -308,7 +313,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 		
 		if( sBoundaries != null ){
 			event.preventDefault();
-			oDynamicTable.oTableHandleData = {
+			oDynamicTable.oTableResizeHandleData = {
 					sBoundaries: sBoundaries,
 					iLastCoordinate:	{
 						x: event.pageX,
@@ -320,11 +325,11 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 	
 	//adjust the width and height of the table if the handle has been pressed
 	jQuery(document).mousemove( function( event ) {
-        if(oDynamicTable.oTableHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oTableHandleData.iLastCoordinate.x;
-        	var iYChange = event.pageY - oDynamicTable.oTableHandleData.iLastCoordinate.y;
+        if(oDynamicTable.oTableResizeHandleData != null ) {
+        	var iXChange = event.pageX - oDynamicTable.oTableResizeHandleData.iLastCoordinate.x;
+        	var iYChange = event.pageY - oDynamicTable.oTableResizeHandleData.iLastCoordinate.y;
         	
-        	var sBoundaries = oDynamicTable.oTableHandleData.sBoundaries;
+        	var sBoundaries = oDynamicTable.oTableResizeHandleData.sBoundaries;
         	
         	if( iXChange != 0 ){
 	        	if( sBoundaries.indexOf('e') != -1 ){
@@ -339,14 +344,88 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
         	}
 
         	
-        	oDynamicTable.oTableHandleData.iLastCoordinate.x = event.pageX;
-        	oDynamicTable.oTableHandleData.iLastCoordinate.y = event.pageY;
+        	oDynamicTable.oTableResizeHandleData.iLastCoordinate.x = event.pageX;
+        	oDynamicTable.oTableResizeHandleData.iLastCoordinate.y = event.pageY;
         }
     });
 	
 	jQuery(document).mouseup(function(event){
-		if( oDynamicTable.oTableHandleData != null ){
-			oDynamicTable.oTableHandleData = null;
+		if( oDynamicTable.oTableResizeHandleData != null ){
+			oDynamicTable.oTableResizeHandleData = null;
+		}
+	});
+}
+
+DynamicTable.prototype._initEventListenersDraggable = function(){
+	
+	var oDynamicTable = this;
+	
+	// add table handle pointers based on location
+	this.oTableElement.mousemove( function( event ){
+		var sCursorStyle = 'default';
+
+		if( oDynamicTable.oTableDragHandleData ){
+			//if the tableHandle is in the process 
+			//	of moving, don't bother changing the cursor
+			return; 
+		}
+		
+		//returns one of ( n, ne, e, se, s, sw, w, nw )
+		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
+		
+		//only allowing resizing from east and/or south borders to start with
+		if( sBoundaryLocation != null && sBoundaryLocation.indexOf('n') != -1 ){
+			sCursorStyle = 'move';
+		}
+		
+		jQuery('body').css('cursor', sCursorStyle );
+	});
+	
+	// remove the column handle pointer
+	this.oTableElement.mouseout( function( event ){
+		if( oDynamicTable.oTableDragHandleData == null ){
+			jQuery('body').css('cursor', 'default');
+		}
+	});
+	
+	// store the x,y coordinates
+	this.oTableElement.mousedown( function( event ){	
+		sBoundaries = MouseLocationDetector.getCoveredBoundaries(event, this);
+		
+		if( sBoundaries != null && sBoundaries == 'n' ){
+			event.preventDefault();
+			oDynamicTable.oTableDragHandleData = {
+					iLastCoordinate:	{
+						x: event.pageX,
+						y: event.pageY
+					}
+			};
+		}
+	});
+	
+	//adjust the width and height of the table if the handle has been pressed
+	jQuery(document).mousemove( function( event ) {
+        if(oDynamicTable.oTableDragHandleData != null ) {
+        	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.iLastCoordinate.x;
+        	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.iLastCoordinate.y;
+        	
+        	if( iXChange != 0 ){
+        		//TODO set the left value = left + iXChange
+        	}
+        	
+        	if( iYChange != 0 ){
+        		//TODO set the top value = top + iYChange
+        	}
+
+        	
+        	oDynamicTable.oTableDragHandleData.iLastCoordinate.x = event.pageX;
+        	oDynamicTable.oTableDragHandleData.iLastCoordinate.y = event.pageY;
+        }
+    });
+	
+	jQuery(document).mouseup(function(event){
+		if( oDynamicTable.oTableDragHandleData != null ){
+			oDynamicTable.oTableDragHandleData = null;
 		}
 	});
 }
