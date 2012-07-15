@@ -318,11 +318,11 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 		}
 	});
 	
+	//adjust the width and height of the table if the handle has been pressed
 	jQuery(document).mousemove( function( event ) {
         if(oDynamicTable.oTableHandleData != null ) {
         	var iXChange = event.pageX - oDynamicTable.oTableHandleData.iLastCoordinate.x;
         	var iYChange = event.pageY - oDynamicTable.oTableHandleData.iLastCoordinate.y;
-        	console.log( [event.pageX, iXChange, oDynamicTable.oTableElement.width() ] );
         	
         	var sBoundaries = oDynamicTable.oTableHandleData.sBoundaries;
         	
@@ -334,7 +334,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
         	
         	if( iYChange != 0 ){
         		if( sBoundaries.indexOf('s') != -1 ){
-	        		oDynamicTable.oTableElement.height( oDynamicTable.oTableElement.height() + iXChange );
+	        		oDynamicTable.oTableElement.height( oDynamicTable.oTableElement.height() + iYChange );
         		}
         	}
 
@@ -599,8 +599,8 @@ var MouseLocationDetector = {
 		var iBottomEdgeYCoordinate = jQuery(element).offset().top + jQuery(element).outerHeight();
 	
 		var iTopEdgeYCoordinate = iBottomEdgeYCoordinate - MouseLocationDetector.iBoundarySize;
-		console.log( [ iTopEdgeYCoordinate, iBottomEdgeYCoordinate, event.pageY, ( event.pageY > iBottomEdgeYCoordinate ), ( event.pageY < iTopEdgeYCoordinate ) ] );
-		return ( event.pageY > iBottomEdgeYCoordinate && event.pageY < iTopEdgeYCoordinate );
+
+		return ( event.pageY < iBottomEdgeYCoordinate && event.pageY > iTopEdgeYCoordinate );
 	},
 	
 	/**
