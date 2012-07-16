@@ -403,7 +403,8 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 					oStartCoordinate:	{
 						x: event.pageX,
 						y: event.pageY
-					}
+					},
+					oStartOffset:	oDynamicTable.oTableElement.offset()
 			};
 		}
 	});
@@ -413,18 +414,12 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
         if(oDynamicTable.oTableDragHandleData != null ) {
         	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.oStartCoordinate.x;
         	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.oStartCoordinate.y;
-        	
-        	if( iXChange != 0 ){
-        		//TODO set the left value = left + iXChange
-        	}
-        	
-        	if( iYChange != 0 ){
-        		//TODO set the top value = top + iYChange
-        	}
+        	console.log([iXChange, iYChange] );
 
-        	
-        	oDynamicTable.oTableDragHandleData.oStartCoordinate.x = event.pageX;
-        	oDynamicTable.oTableDragHandleData.oStartCoordinate.y = event.pageY;
+        	oDynamicTable.oTableElement.offset({
+        		left: oDynamicTable.oTableDragHandleData.oStartOffset.left + iXChange,
+        		top: oDynamicTable.oTableDragHandleData.oStartOffset.top + iYChange,
+        	});
         }
     });
 	
