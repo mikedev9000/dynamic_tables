@@ -414,7 +414,6 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
         if(oDynamicTable.oTableDragHandleData != null ) {
         	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.oStartCoordinate.x;
         	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.oStartCoordinate.y;
-        	console.log([iXChange, iYChange] );
 
         	oDynamicTable.oTableElement.offset({
         		left: oDynamicTable.oTableDragHandleData.oStartOffset.left + iXChange,
