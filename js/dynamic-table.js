@@ -197,11 +197,11 @@ DynamicTable.prototype._initEventListeners = function(){
 	
 	if( this.bDraggable ){
 		//this._initEventListenersDraggable();
-		new Draggable( { oElement: this.oTableElement } );
+		new behavior.Draggable( { oElement: this.oTableElement } );
 	}
 	
 	if( this.bTableResizeable ){
-		new Resizeable( { oElement: this.oTableElement } );
+		new behavior.Resizeable( { oElement: this.oTableElement } );
 	}
 };
 
@@ -390,7 +390,7 @@ DynamicTable.prototype._updateTableStructure = function(){
 DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
 	if( this.bColumnsResizeable ){
 		this.oTableElement.find('tr.columnHeaders th').each(function(){
-			new Resizeable( { oElement: jQuery(this) } );
+			new behavior.Resizeable( { oElement: jQuery(this) } );
 		});
 	}
 };
