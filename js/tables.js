@@ -196,15 +196,12 @@ DynamicTable.prototype._initEventListeners = function(){
 	}
 	
 	if( this.bDraggable ){
-		this._initEventListenersDraggable();
+		//this._initEventListenersDraggable();
+		new Draggable( { oElement: this.oTableElement } );
 	}
 	
 	if( this.bTableResizeable ){
-		this._initEventListenersTableResizeable();
-	}
-	
-	if( this.bColumnsResizeable ){
-		this._initEventListenersColumnsResizeable();
+		new Resizeable( { oElement: this.oTableElement } );
 	}
 };
 
@@ -244,189 +241,6 @@ DynamicTable.prototype._initEventListenersPaging = function(){
 		oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
 		oDynamicTable.render();
 	});	
-};
-
-/**
- * Bind event listeners for the columns resizeable feature
- */
-DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
-	
-	var oDynamicTable = this;
-	
-	jQuery(document).mousemove(function(event) {
-        if(oDynamicTable.oColumnHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iStartXCoordinate;
-
-        	var oElement = oDynamicTable.oColumnHandleData.oElement;
-
-    		jQuery(oElement).width( oDynamicTable.oColumnHandleData.iStartWidth + iXChange );
-        }
-    });
-	
-	jQuery(document).mouseup(function(event){
-		if( oDynamicTable.oColumnHandleData != null ){
-			oDynamicTable.oColumnHandleData = null;
-		}
-	});
-};
-
-/**
- * Bind event listeners for the table resizeable feature
- */
-DynamicTable.prototype._initEventListenersTableResizeable = function(){
-	
-	var oDynamicTable = this;
-	
-	// add table handle pointers based on location
-	this.oTableElement.mousemove( function( event ){
-		var sCursorStyle = 'default';
-
-		if( oDynamicTable.oTableResizeHandleData ){
-			//if the tableHandle is in the process 
-			//	of moving, don't bother changing the cursor
-			return; 
-		}
-		
-		//returns one of ( n, ne, e, se, s, sw, w, nw )
-		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
-		
-		//only allowing resizing from east and/or south borders to start with
-		if( sBoundaryLocation == 's' || sBoundaryLocation == 'se' || sBoundaryLocation == 'e' ){
-			sCursorStyle = sBoundaryLocation + '-resize';
-		}
-		
-		if( sCursorStyle != 'default'){
-			jQuery('body').css('cursor', sCursorStyle );
-		}
-	});
-	
-	// remove the column handle pointer
-	this.oTableElement.mouseout( function( event ){
-		if( oDynamicTable.oTableResizeHandleData == null ){
-			jQuery('body').css('cursor', 'default');
-		}
-	});
-	
-	// store some data about boundary that was clicked and the x,y coordinates
-	this.oTableElement.mousedown( function( event ){	
-		sBoundaries = MouseLocationDetector.getCoveredBoundaries(event, this);
-		
-		if( sBoundaries != null ){
-			event.preventDefault();
-			oDynamicTable.oTableResizeHandleData = {
-					sBoundaries: sBoundaries,
-					oStartCoordinate:	{
-						x: event.pageX,
-						y: event.pageY
-					},
-					oStartSize:	{
-						iWidth: oDynamicTable.oTableElement.width(),
-						iHeight: oDynamicTable.oTableElement.height() 
-					}
-			};
-		}
-	});
-	
-	//adjust the width and height of the table if the handle has been pressed
-	jQuery(document).mousemove( function( event ) {
-        if(oDynamicTable.oTableResizeHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oTableResizeHandleData.oStartCoordinate.x;
-        	var iYChange = event.pageY - oDynamicTable.oTableResizeHandleData.oStartCoordinate.y;
-        	
-        	var sBoundaries = oDynamicTable.oTableResizeHandleData.sBoundaries;
-        	
-        	if( iXChange != 0 ){
-	        	if( sBoundaries.indexOf('e') != -1 ){
-	        		oDynamicTable.oTableElement.width( oDynamicTable.oTableResizeHandleData.oStartSize.iWidth + iXChange );
-	        	}
-        	}
-        	
-        	if( iYChange != 0 ){
-        		if( sBoundaries.indexOf('s') != -1 ){
-	        		oDynamicTable.oTableElement.height( oDynamicTable.oTableResizeHandleData.oStartSize.iHeight + iYChange );
-        		}
-        	}
-        }
-    });
-	
-	jQuery(document).mouseup(function(event){
-		if( oDynamicTable.oTableResizeHandleData != null ){
-			oDynamicTable.oTableResizeHandleData = null;
-		}
-	});
-};
-
-/**
- * Bind event listeners for the draggable feature
- */
-DynamicTable.prototype._initEventListenersDraggable = function(){
-	
-	var oDynamicTable = this;
-	
-	// add table handle pointers based on location
-	this.oTableElement.mousemove( function( event ){
-		var sCursorStyle = 'default';
-
-		if( oDynamicTable.oTableDragHandleData ){
-			//if the tableHandle is in the process 
-			//	of moving, don't bother changing the cursor
-			return; 
-		}
-		
-		//returns one of ( n, ne, e, se, s, sw, w, nw )
-		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
-		
-		//only allowing resizing from east and/or south borders to start with
-		if( sBoundaryLocation == 'n' ){
-			sCursorStyle = 'move';
-		}
-		
-		if( sCursorStyle != 'default'){
-			jQuery('body').css('cursor', sCursorStyle );
-		};
-	});
-	
-	// remove the column handle pointer
-	this.oTableElement.mouseout( function( event ){
-		if( oDynamicTable.oTableDragHandleData == null ){
-			jQuery('body').css('cursor', 'default');
-		}
-	});
-	
-	// store the x,y coordinates
-	this.oTableElement.mousedown( function( event ){	
-		sBoundaries = MouseLocationDetector.getCoveredBoundaries(event, this);
-		
-		if( sBoundaries != null && sBoundaries == 'n' ){
-			event.preventDefault();
-			oDynamicTable.oTableDragHandleData = {
-					oStartCoordinate:	{
-						x: event.pageX,
-						y: event.pageY
-					},
-					oStartOffset:	oDynamicTable.oTableElement.offset()
-			};
-		}
-	});
-	
-	//adjust the width and height of the table if the handle has been pressed
-	jQuery(document).mousemove( function( event ) {
-        if(oDynamicTable.oTableDragHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.oStartCoordinate.x;
-        	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.oStartCoordinate.y;
-
-        	oDynamicTable.oTableElement.offset({
-        		left: oDynamicTable.oTableDragHandleData.oStartOffset.left + iXChange,
-        		top: oDynamicTable.oTableDragHandleData.oStartOffset.top + iYChange,
-        	});
-        }
-    });
-	
-	jQuery(document).mouseup(function(event){
-		if( oDynamicTable.oTableDragHandleData != null ){
-			oDynamicTable.oTableDragHandleData = null;
-		}
-	});
 };
 
 /**
@@ -575,48 +389,10 @@ DynamicTable.prototype._updateTableStructure = function(){
  */
 DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
 	if( this.bColumnsResizeable ){
-		this._bindColumnsResizeableEventHandlers();
+		this.oTableElement.find('tr.columnHeaders th').each(function(){
+			new Resizeable( { oElement: jQuery(this) } );
+		});
 	}
-};
-
-DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
-	var oDynamicTable = this;
-	
-	// add the column handle pointers if on the left or right boundary of a th cell in the columnHeaders row
-	this.oTableElement.find('tr.columnHeaders th').mousemove( function( event ){
-		var sCursorStyle;
-		
-		if( oDynamicTable.oColumnHandleData ){
-			//if the columnHandle is in the process 
-			//	of moving, don't bother changing the cursor
-			return; 
-		}
-		if( MouseLocationDetector.onRightBoundary( event, this ) ){
-			sCursorStyle = 'e-resize';
-		}
-		else{
-			sCursorStyle = 'default';
-		}
-		
-		jQuery('body').css('cursor', sCursorStyle );
-	});
-	
-	// remove the column handle pointer
-	this.oTableElement.find('tr.columnHeaders th').mouseout( function( event ){
-		jQuery('body').css('cursor', 'default');
-	});
-	
-	// store some data about the column being resized
-	this.oTableElement.find('tr.columnHeaders th').mousedown( function( event ){			
-		if( MouseLocationDetector.onRightBoundary( event, this ) ){
-			event.preventDefault();
-			oDynamicTable.oColumnHandleData = {
-					oElement: 			this,
-					iStartXCoordinate:	event.pageX,
-					iStartWidth:		$(this).width()
-			};
-		}
-	});
 };
 
 /**
@@ -629,86 +405,3 @@ jQuery.extend( jQuery, {
 		oDynamicTable.render();
 	}
 });
-
-/**
- * The MouseLocationDetector object contains function for determining teh mouse's
- * location relative to an element. It assists in resizing of columns and the table itself.
- */
-var MouseLocationDetector = {
-		
-	/**
-	 * holds the size a boundary in pixels
-	 */
-	iBoundarySize: 10,
-	
-	/**
-	 * Returns true if the mouse is inside of the right boundary, false otherwise
-	 */
-	onRightBoundary: function( event, element ){
-		var iRightEdgeXCoordinate = jQuery(element).offset().left + jQuery(element).outerWidth();
-	
-		var iLeftEdgeXCoordinate = iRightEdgeXCoordinate - MouseLocationDetector.iBoundarySize;
-		
-		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
-	},
-	
-	/**
-	 * Returns true if the mouse is inside of the left boundary, false otherwise
-	 */
-	onLeftBoundary: function( event, element ){
-		var iLeftEdgeXCoordinate = jQuery(element).offset().left;
-		
-		var iRightEdgeXCoordinate = iLeftEdgeXCoordinate + MouseLocationDetector.iBoundarySize;
-		
-		return ( event.pageX > iLeftEdgeXCoordinate && event.pageX < iRightEdgeXCoordinate );
-	},
-	
-	/**
-	 * Returns true if the mouse is inside of the top boundary, false otherwise
-	 */
-	onTopBoundary: function( event, element ){
-		var iTopEdgeYCoordinate = jQuery(element).offset().top;
-	
-		var iBottomEdgeYCoordinate = iTopEdgeYCoordinate + MouseLocationDetector.iBoundarySize;
-
-		return ( event.pageY < iBottomEdgeYCoordinate && event.pageY > iTopEdgeYCoordinate );
-	},
-	
-	/**
-	 * Returns true if the mouse is inside of the bottom boundary, false otherwise
-	 */
-	onBottomBoundary: function( event, element ){
-		var iBottomEdgeYCoordinate = jQuery(element).offset().top + jQuery(element).outerHeight();
-	
-		var iTopEdgeYCoordinate = iBottomEdgeYCoordinate - MouseLocationDetector.iBoundarySize;
-
-		return ( event.pageY < iBottomEdgeYCoordinate && event.pageY > iTopEdgeYCoordinate );
-	},
-	
-	/**
-	 * Returns a string containing one of the following:
-	 * 	[n, ne, e, se, s, sw, nw]
-	 * based on the location of the mouse within the element.
-	 * 
-	 * If the mouse is not over any border, null is returned.
-	 */
-	getCoveredBoundaries: function( event, element ){
-		var sLocation = '';
-		
-		if( MouseLocationDetector.onRightBoundary( event, element ) ){
-			sLocation = 'e' + sLocation;
-		}
-		else if ( MouseLocationDetector.onLeftBoundary( event, element ) ){
-			sLocation = 'w' + sLocation;
-		}
-		
-		if ( MouseLocationDetector.onBottomBoundary( event, element ) ){
-			sLocation = 's' + sLocation;
-		}
-		else if ( MouseLocationDetector.onTopBoundary( event, element ) ){
-			sLocation = 'n' + sLocation;
-		}
-		
-		return sLocation != '' ? sLocation : null;
-	}
-};
