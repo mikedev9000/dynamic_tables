@@ -90,7 +90,7 @@
 	 * location when dragging the table
 	 */
 	this.oTableDragHandleData = null;
-}
+};
 
  /**
   * Called on new DynamicTable(oSettings) object in instantiated to render 
@@ -169,7 +169,7 @@
  	if( this.iHeight ){
  		this.oTableElement.css( 'height', this.iHeight );
  	}
- }
+ };
 
  /**
   * Bind jQuery events for different features, based on the configuration
@@ -206,7 +206,7 @@ DynamicTable.prototype._initEventListeners = function(){
 	if( this.bColumnsResizeable ){
 		this._initEventListenersColumnsResizeable();
 	}
-}
+};
 
 /**
  * Binds event listeners for the paging feature
@@ -244,7 +244,7 @@ DynamicTable.prototype._initEventListenersPaging = function(){
 		oDynamicTable.iCurrentPage = oDynamicTable.aaaPages.length - 1;
 		oDynamicTable.render();
 	});	
-}
+};
 
 /**
  * Bind event listeners for the columns resizeable feature
@@ -268,7 +268,7 @@ DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
 			oDynamicTable.oColumnHandleData = null;
 		}
 	});
-}
+};
 
 /**
  * Bind event listeners for the table resizeable feature
@@ -354,7 +354,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 			oDynamicTable.oTableResizeHandleData = null;
 		}
 	});
-}
+};
 
 /**
  * Bind event listeners for the draggable feature
@@ -427,7 +427,7 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 			oDynamicTable.oTableDragHandleData = null;
 		}
 	});
-}
+};
 
 /**
  * Performs an ajax request to retrieve the json data,
@@ -446,7 +446,7 @@ DynamicTable.prototype.render = function(){
 			oDynamicTable._fillTable();
 		} 
 	});
-}
+};
 
 
 /**
@@ -500,7 +500,7 @@ DynamicTable.prototype._transformData = function( data ){
 		
 	    this.aaaPages.push( aaPageRows );
 	}
-}
+};
 
 /**
  * Renders the data that has been set up on the DynamicTable
@@ -536,7 +536,7 @@ DynamicTable.prototype._fillTable = function(){
 	
 	//bind any event handlers that rely on data existing in the table
 	this._bindDataDrivenEventHandlers();
-}
+};
 
 /**
  * Makes any changes needed after rendering data into the table.
@@ -567,7 +567,7 @@ DynamicTable.prototype._updateTableStructure = function(){
 		this.oTableElement.find('tfoot tr.paging span.paging-current-page').html( (this.iCurrentPage + 1) );
 		this.oTableElement.find('tfoot tr.paging span.paging-total-pages').html( (this.aaaPages.length ) );
 	}
-}
+};
 
 /**
  * Any event handlers that rely on data being populated in the table should be added here.
@@ -577,7 +577,7 @@ DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
 	if( this.bColumnsResizeable ){
 		this._bindColumnsResizeableEventHandlers();
 	}
-}
+};
 
 DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 	var oDynamicTable = this;
@@ -617,7 +617,7 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 			};
 		}
 	});
-}
+};
 
 /**
  * Extend jquery with a function to create and render a new DynamicTable
@@ -711,4 +711,4 @@ var MouseLocationDetector = {
 		
 		return sLocation != '' ? sLocation : null;
 	}
-}
+};
