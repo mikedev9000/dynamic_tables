@@ -255,13 +255,11 @@ DynamicTable.prototype._initEventListenersColumnsResizeable = function(){
 	
 	jQuery(document).mousemove(function(event) {
         if(oDynamicTable.oColumnHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iLastXCoordinate;
+        	var iXChange = event.pageX - oDynamicTable.oColumnHandleData.iStartXCoordinate;
 
         	var oElement = oDynamicTable.oColumnHandleData.oElement;
 
-    		jQuery(oElement).width( jQuery(oElement).width() + iXChange );
-        	
-        	oDynamicTable.oColumnHandleData.iLastXCoordinate = event.pageX;
+    		jQuery(oElement).width( oDynamicTable.oColumnHandleData.iStartWidth + iXChange );
         }
     });
 	
@@ -293,7 +291,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
 		
 		//only allowing resizing from east and/or south borders to start with
-		if( sBoundaryLocation != null && ( sBoundaryLocation == 's' || sBoundaryLocation == 'se' || sBoundaryLocation == 'e' ) ){
+		if( sBoundaryLocation == 's' || sBoundaryLocation == 'se' || sBoundaryLocation == 'e' ){
 			sCursorStyle = sBoundaryLocation + '-resize';
 		}
 		
@@ -315,9 +313,13 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 			event.preventDefault();
 			oDynamicTable.oTableResizeHandleData = {
 					sBoundaries: sBoundaries,
-					iLastCoordinate:	{
+					oStartCoordinate:	{
 						x: event.pageX,
 						y: event.pageY
+					},
+					oStartSize:	{
+						iWidth: oDynamicTable.oTableElement.width(),
+						iHeight: oDynamicTable.oTableElement.height() 
 					}
 			};
 		}
@@ -326,26 +328,22 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 	//adjust the width and height of the table if the handle has been pressed
 	jQuery(document).mousemove( function( event ) {
         if(oDynamicTable.oTableResizeHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oTableResizeHandleData.iLastCoordinate.x;
-        	var iYChange = event.pageY - oDynamicTable.oTableResizeHandleData.iLastCoordinate.y;
+        	var iXChange = event.pageX - oDynamicTable.oTableResizeHandleData.oStartCoordinate.x;
+        	var iYChange = event.pageY - oDynamicTable.oTableResizeHandleData.oStartCoordinate.y;
         	
         	var sBoundaries = oDynamicTable.oTableResizeHandleData.sBoundaries;
         	
         	if( iXChange != 0 ){
 	        	if( sBoundaries.indexOf('e') != -1 ){
-	        		oDynamicTable.oTableElement.width( oDynamicTable.oTableElement.width() + iXChange );
+	        		oDynamicTable.oTableElement.width( oDynamicTable.oTableResizeHandleData.oStartSize.iWidth + iXChange );
 	        	}
         	}
         	
         	if( iYChange != 0 ){
         		if( sBoundaries.indexOf('s') != -1 ){
-	        		oDynamicTable.oTableElement.height( oDynamicTable.oTableElement.height() + iYChange );
+	        		oDynamicTable.oTableElement.height( oDynamicTable.oTableResizeHandleData.oStartSize.iHeight + iYChange );
         		}
         	}
-
-        	
-        	oDynamicTable.oTableResizeHandleData.iLastCoordinate.x = event.pageX;
-        	oDynamicTable.oTableResizeHandleData.iLastCoordinate.y = event.pageY;
         }
     });
 	
@@ -356,6 +354,9 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 	});
 }
 
+/**
+ * Bind event listeners for the draggable feature
+ */
 DynamicTable.prototype._initEventListenersDraggable = function(){
 	
 	var oDynamicTable = this;
@@ -374,10 +375,10 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
 		
 		//only allowing resizing from east and/or south borders to start with
-		if( sBoundaryLocation != null && sBoundaryLocation.indexOf('n') != -1 ){
+		if( sBoundaryLocation == 'n' ){
 			sCursorStyle = 'move';
 		}
-		
+
 		jQuery('body').css('cursor', sCursorStyle );
 	});
 	
@@ -395,7 +396,7 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 		if( sBoundaries != null && sBoundaries == 'n' ){
 			event.preventDefault();
 			oDynamicTable.oTableDragHandleData = {
-					iLastCoordinate:	{
+					oStartCoordinate:	{
 						x: event.pageX,
 						y: event.pageY
 					}
@@ -406,8 +407,8 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 	//adjust the width and height of the table if the handle has been pressed
 	jQuery(document).mousemove( function( event ) {
         if(oDynamicTable.oTableDragHandleData != null ) {
-        	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.iLastCoordinate.x;
-        	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.iLastCoordinate.y;
+        	var iXChange = event.pageX - oDynamicTable.oTableDragHandleData.oStartCoordinate.x;
+        	var iYChange = event.pageY - oDynamicTable.oTableDragHandleData.oStartCoordinate.y;
         	
         	if( iXChange != 0 ){
         		//TODO set the left value = left + iXChange
@@ -418,8 +419,8 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
         	}
 
         	
-        	oDynamicTable.oTableDragHandleData.iLastCoordinate.x = event.pageX;
-        	oDynamicTable.oTableDragHandleData.iLastCoordinate.y = event.pageY;
+        	oDynamicTable.oTableDragHandleData.oStartCoordinate.x = event.pageX;
+        	oDynamicTable.oTableDragHandleData.oStartCoordinate.y = event.pageY;
         }
     });
 	
@@ -613,7 +614,8 @@ DynamicTable.prototype._bindColumnsResizeableEventHandlers = function(){
 			event.preventDefault();
 			oDynamicTable.oColumnHandleData = {
 					oElement: 			this,
-					iLastXCoordinate:	event.pageX
+					iStartXCoordinate:	event.pageX,
+					iStartWidth:		$(this).width()
 			};
 		}
 	});
