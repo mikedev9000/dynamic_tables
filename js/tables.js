@@ -293,7 +293,7 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 		sBoundaryLocation = MouseLocationDetector.getCoveredBoundaries(event, this);
 		
 		//only allowing resizing from east and/or south borders to start with
-		if( sBoundaryLocation != null && ( sBoundaryLocation.indexOf('e') != -1 || sBoundaryLocation.indexOf('s') != -1 ) ){
+		if( sBoundaryLocation != null && ( sBoundaryLocation == 's' || sBoundaryLocation == 'se' || sBoundaryLocation == 'e' ) ){
 			sCursorStyle = sBoundaryLocation + '-resize';
 		}
 		
@@ -667,8 +667,11 @@ var MouseLocationDetector = {
 	 * Returns true if the mouse is inside of the top boundary, false otherwise
 	 */
 	onTopBoundary: function( event, element ){
-		//TODO flesh this out once there is a need for it
-		return false;
+		var iTopEdgeYCoordinate = jQuery(element).offset().top;
+	
+		var iBottomEdgeYCoordinate = iTopEdgeYCoordinate + MouseLocationDetector.iBoundarySize;
+
+		return ( event.pageY < iBottomEdgeYCoordinate && event.pageY > iTopEdgeYCoordinate );
 	},
 	
 	/**
@@ -692,18 +695,18 @@ var MouseLocationDetector = {
 	getCoveredBoundaries: function( event, element ){
 		var sLocation = '';
 		
-		if ( MouseLocationDetector.onBottomBoundary( event, element ) ){
-			sLocation = 's' + sLocation;
-		}
-		else if ( MouseLocationDetector.onTopBoundary( event, element ) ){
-			sLocation = 'n' + sLocation;
-		}
-		
 		if( MouseLocationDetector.onRightBoundary( event, element ) ){
 			sLocation = 'e' + sLocation;
 		}
 		else if ( MouseLocationDetector.onLeftBoundary( event, element ) ){
 			sLocation = 'w' + sLocation;
+		}
+		
+		if ( MouseLocationDetector.onBottomBoundary( event, element ) ){
+			sLocation = 's' + sLocation;
+		}
+		else if ( MouseLocationDetector.onTopBoundary( event, element ) ){
+			sLocation = 'n' + sLocation;
 		}
 		
 		return sLocation != '' ? sLocation : null;
