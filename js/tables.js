@@ -295,7 +295,9 @@ DynamicTable.prototype._initEventListenersTableResizeable = function(){
 			sCursorStyle = sBoundaryLocation + '-resize';
 		}
 		
-		jQuery('body').css('cursor', sCursorStyle );
+		if( sCursorStyle != 'default'){
+			jQuery('body').css('cursor', sCursorStyle );
+		}
 	});
 	
 	// remove the column handle pointer
@@ -378,8 +380,10 @@ DynamicTable.prototype._initEventListenersDraggable = function(){
 		if( sBoundaryLocation == 'n' ){
 			sCursorStyle = 'move';
 		}
-
-		jQuery('body').css('cursor', sCursorStyle );
+		
+		if( sCursorStyle != 'default'){
+			jQuery('body').css('cursor', sCursorStyle );
+		};
 	});
 	
 	// remove the column handle pointer
