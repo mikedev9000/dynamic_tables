@@ -13,11 +13,10 @@ table.dynamic-table{
 	color: @textColor;
 	th, td{
 		padding: 8px;
-		backround: @darkBackgroundColor
 	}
 	thead{
 		tr.inputs{
-			background: @backgroundColor;
+			text-align: center;
 		}
 		tr.columnHeaders{
 			background: @backgroundColor;
@@ -35,12 +34,23 @@ table.dynamic-table{
 				margin: 2px;
 			}
 		}
+		td{
+			backround: @darkBackgroundColor
+		}
 	}
 	tbody{
 		tr{
 			
 		}
 	}
+}
+
+.left{
+	float:left;
+}
+
+.right{
+	float:right;
 }
 
 .clear{

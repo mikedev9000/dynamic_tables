@@ -111,8 +111,6 @@
  		aOptions = [ 3, 4, 10, 15, 20, 50, 100 ];
  		
  		aOptionStrings = [];
- 	
- 		aInputs.push( '<input type="submit" class="refresh" value="Refresh Data"></input>' );
  		
  		for( i = 0; i < aOptions.length; i++ ){			
  			var sSelected = aOptions[i] == this.iPageRowCount ? ' selected="selected"' : '';
@@ -121,22 +119,25 @@
  									aOptions[i] + '</option>');
  		}
  				
- 		aInputs.push( 	'<label for="paging">Records Per Page</label>' + 
+ 		aInputs.push( 	'<div class="left"><label for="paging">Records Per Page</label>' + 
  						'<select class="paging"> ' + 
- 						aOptionStrings.join('') + '</select>' );
+ 						aOptionStrings.join('') + '</select></div>' );
  	}
  	
+ 	aInputs.push( '<input type="submit" class="refresh" value="Refresh Data"></input>' );
+ 		
+ 	
  	if( this.bSearchable ){
- 		aInputs.push( 	'<form class="search">' +
+ 		aInputs.push( 	'<div class="right"><form class="search">' +
  							'<input type="text" name="term" ' + 
  								'value="' + this.sSearchTerm + '"></input>' +
  								'<input type="submit" value="Search"></input>' +
- 						'</form>');
+ 						'</form></div>');
  	}
  	
  	var sHead = 	'<thead>' +
  						'<tr class="inputs"><th>' + 
- 								aInputs.join('') + '</th></tr>' +
+ 								aInputs.join('') + '<div class="clear"></div></th></tr>' +
  						'<tr class="columnHeaders"></tr>' + 
  					'</thead>';
  	
