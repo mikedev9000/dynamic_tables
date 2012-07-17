@@ -1,0 +1,21 @@
+table th
+{
+	font-size: 13px;
+	font-weight: normal;
+	background: #B9C9FE;
+	border-top: 4px solid #AABCFE;
+	border-bottom: 1px solid white;
+	color: #039;
+	padding: 8px;
+}
+table td 
+{
+	background: #E8EDFF;
+	border-bottom: 1px solid white;
+	color: #669;
+	border-top: 1px solid transparent;
+	padding: 8px;
+}
+table tr
+{
+}

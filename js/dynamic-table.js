@@ -90,6 +90,8 @@
 	 * location when dragging the table
 	 */
 	this.oTableDragHandleData = null;
+	
+	this.render();
 };
 
  /**
@@ -394,14 +396,3 @@ DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
 		});
 	}
 };
-
-/**
- * Extend jquery with a function to create and render a new DynamicTable
- */
-jQuery.extend( jQuery, {
-	createDynamicTable: function( oSettings ){
-		var oDynamicTable = new DynamicTable( oSettings );
-		
-		oDynamicTable.render();
-	}
-});

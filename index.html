@@ -3,23 +3,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NetBoss Pre-interview Test - Table Features</title>
-<style type="text/css">
-table
-{
-	/*border-collapse:collapse;*/
-}
-table, td, th
-{
-	border:1px solid black;
-	padding: 3px;
-}
-</style>
+<link rel="stylesheet" href="/css/dynamic-table.css" type="text/css">
 <script type="text/javascript" src="/js/jquery-1.7.2.js"></script>
 <script type="text/javascript" src="/js/dynamic-table.js"></script>
 <script type="text/javascript" src="/js/behavior.js"></script>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-	$.createDynamicTable({
+	new DynamicTable({
 		oTableElement: jQuery('table#test'), 
 		sUrl: '/test_data/products.json',
 		iWidth: null,
