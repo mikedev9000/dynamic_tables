@@ -92,6 +92,8 @@
 	this.oTableDragHandleData = null;
 	
 	this.render();
+	
+	this.oTableElement.addClass( 'dynamic-table' );
 };
 
  /**
@@ -142,21 +144,25 @@
  	
  	if( this.bPaging ){
  		
- 		aPagingElements.push( 'Page <span class="paging-current-page"></span> ' +
- 									'of <span class="paging-total-pages"></span>' );
+ 		aPagingElements.push( '<div class="paging-information">Page <span class="paging-current-page"></span> ' +
+ 									'of <span class="paging-total-pages"></span></div>' );
 
  		aButtonNames = ['first', 'previous', 'next', 'last'];
+ 		
+ 		aPagingElements.push( '<div class="paging-buttons">' );
  		
  		for( i = 0; i < aButtonNames.length; i++ ){
  			var sName = aButtonNames[i];
  			
  			aPagingElements.push( '<a class="paging-btn paging-btn-' + sName + '">' + sName.charAt(0).toUpperCase() + sName.slice(1) + '</a>' );
  		}
+ 		
+ 		aPagingElements.push( '</div>' );
  	}
  	
  	var sFoot = '<tfoot>' + 
  					'<tr class="paging"><td>' + 
- 					aPagingElements.join('') + '</td></tr>' + 
+ 					aPagingElements.join('') + '<div class="clear"></div></td></tr>' + 
  				'</tfoot>';	
  	
  	var sBody = '<tbody></tbody>';
@@ -350,8 +356,11 @@ DynamicTable.prototype._fillTable = function(){
 	//make any changes to the base table structure that rely on the data being rendered
 	this._updateTableStructure();
 	
-	//bind any event handlers that rely on data existing in the table
-	this._bindDataDrivenEventHandlers();
+	if( this.bColumnsResizeable ){
+		this.oTableElement.find('tr.columnHeaders th').each(function(){
+			new behavior.Resizeable( { oElement: jQuery(this) } );
+		});
+	}
 };
 
 /**
@@ -382,17 +391,5 @@ DynamicTable.prototype._updateTableStructure = function(){
 
 		this.oTableElement.find('tfoot tr.paging span.paging-current-page').html( (this.iCurrentPage + 1) );
 		this.oTableElement.find('tfoot tr.paging span.paging-total-pages').html( (this.aaaPages.length ) );
-	}
-};
-
-/**
- * Any event handlers that rely on data being populated in the table should be added here.
- * This function is called after filling the table and column headers with data.
- */
-DynamicTable.prototype._bindDataDrivenEventHandlers = function(){
-	if( this.bColumnsResizeable ){
-		this.oTableElement.find('tr.columnHeaders th').each(function(){
-			new behavior.Resizeable( { oElement: jQuery(this) } );
-		});
 	}
 };

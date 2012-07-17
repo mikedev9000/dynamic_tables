@@ -1,0 +1,48 @@
+@backgroundColor: #b2cbe1;
+
+@lightBackgroundColor: lighten( @backgroundColor, 30% );
+
+@darkBackgroundColor: darken( @backgroundColor, 30% );
+
+@textColor: #039;
+
+table.dynamic-table{
+	border: 2px solid @backgroundColor;
+	font-size: 13px;
+	font-weight: normal;
+	color: @textColor;
+	th, td{
+		padding: 8px;
+		backround: @darkBackgroundColor
+	}
+	thead{
+		tr.inputs{
+			background: @backgroundColor;
+		}
+		tr.columnHeaders{
+			background: @backgroundColor;
+		}
+	}
+	tfoot{
+		div.paging-information{
+			float: left;
+		}
+		div.paging-buttons{
+			float: right;
+			a{
+				background: @darkBackgroundColor;
+				padding: 2px 4px;
+				margin: 2px;
+			}
+		}
+	}
+	tbody{
+		tr{
+			
+		}
+	}
+}
+
+.clear{
+	clear: both;
+}
