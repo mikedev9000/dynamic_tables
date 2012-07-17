@@ -1,8 +1,8 @@
 @backgroundColor: #b2cbe1;
 
-@lightBackgroundColor: lighten( @backgroundColor, 30% );
+@lightBackgroundColor: lighten( @backgroundColor, 10% );
 
-@darkBackgroundColor: darken( @backgroundColor, 30% );
+@darkBackgroundColor: darken( @backgroundColor, 10% );
 
 @textColor: #039;
 
@@ -15,11 +15,16 @@ table.dynamic-table{
 		padding: 8px;
 	}
 	thead{
+		input, select {
+			background-color: @backgroundColor;
+			color: @textColor;
+		}
 		tr.inputs{
 			text-align: center;
+			background: @lightBackgroundColor;
 		}
 		tr.columnHeaders{
-			background: @backgroundColor;
+			background: @darkBackgroundColor;
 		}
 	}
 	tfoot{
@@ -29,18 +34,22 @@ table.dynamic-table{
 		div.paging-buttons{
 			float: right;
 			a{
-				background: @darkBackgroundColor;
+				background: @lightBackgroundColor;
 				padding: 2px 4px;
 				margin: 2px;
 			}
+			a:hover{
+				background: @backgroundColor;
+				cursor: pointer;
+			}
 		}
-		td{
-			backround: @darkBackgroundColor
+		tr{
+			background: @darkBackgroundColor;
 		}
 	}
 	tbody{
 		tr{
-			
+			background: @lightBackgroundColor;
 		}
 	}
 }
